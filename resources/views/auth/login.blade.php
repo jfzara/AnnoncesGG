@@ -1,25 +1,39 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion</title>
-</head>
-<body>
-    <h1>Connexion</h1>
+@extends('layouts.app')
+
+@section('content')
+<div class="container">
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
     <form method="POST" action="{{ route('login') }}">
         @csrf
-        <div>
-            <label for="email">Courriel :</label>
-            <input type="email" name="email" required>
+        <div class="form-group">
+            <label for="email">Courriel</label>
+            <input type="email" class="form-control" name="email" required>
         </div>
-        <div>
-            <label for="password">Mot de passe :</label>
-            <input type="password" name="password" required>
+        <div class="form-group">
+            <label for="password">Mot de passe</label>
+            <input type="password" class="form-control" name="password" required>
         </div>
-        <div>
-            <button type="submit">Se connecter</button>
-        </div>
+        <button type="submit" class="btn btn-primary">Se connecter</button>
     </form>
-</body>
-</html>
+</div>
+@endsection
+
+<!-- Inclure le fichier compilé JavaScript -->
+<script src="{{ mix('js/app.js') }}"></script>
+<!-- Inclure le fichier compilé CSS si nécessaire -->
+<link href="{{ mix('css/app.css') }}" rel="stylesheet">

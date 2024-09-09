@@ -2,29 +2,41 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class Utilisateur extends Model
+class Utilisateur extends Authenticatable
 {
-    use HasFactory;
+    use Notifiable;
 
+    // Le nom de la table associée
     protected $table = 'utilisateurs';
-    protected $primaryKey = 'NoUtilisateur';
 
+    // Les attributs qui peuvent être remplis
     protected $fillable = [
-        'Courriel', 'MotDePasse', 'Nom', 'Prenom', 'NoTelMaison', 'NoTelTravail', 'NoTelCellulaire', 'Statut'
+        'Courriel', 
+        'MotDePasse',
+        'Nom', 
+        'Prenom',
+        'NoTelMaison', 
+        'NoTelTravail', 
+        'NoTelCellulaire',
+        'Statut', 
+        'NbConnexions'
     ];
 
-    // Un utilisateur a plusieurs annonces
-    public function annonces()
+    // Désactiver la gestion des timestamps
+    public $timestamps = false;
+
+    // Champ qui sera utilisé pour l'authentification (au lieu de 'email')
+    public function getAuthIdentifierName()
     {
-        return $this->hasMany(Annonce::class, 'NoUtilisateur');
+        return 'Courriel';
     }
 
-    // Un utilisateur a plusieurs connexions
-    public function connexions()
+    // Utiliser le champ 'MotDePasse' pour l'authentification
+    public function getAuthPassword()
     {
-        return $this->hasMany(Connexion::class, 'NoUtilisateur');
+        return $this->MotDePasse;
     }
 }
