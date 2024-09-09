@@ -1,28 +1,29 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\AuthUserController; 
-use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Auth\LoginController;
 
 // Routes pour les pages statiques
 Route::get('/liste-annonces', function () {
-    return view('ListeAnnonces'); // Assurez-vous que le fichier de vue existe
+    return view('ListeAnnonces');
 });
 
 Route::get('/gestion-annonces', function () {
-    return view('GestionAnnonces'); // Assurez-vous que le fichier de vue existe
+    return view('GestionAnnonces');
 });
 
 Route::get('/mise-a-jour-profil', function () {
-    return view('miseAJourProfil'); // Assurez-vous que le fichier de vue existe
+    return view('miseAJourProfil');
 });
 
-// Authentification (si tu souhaites utiliser les routes par défaut, laisse cette ligne)
-Auth::routes(); // Cette ligne génère toutes les routes nécessaires pour l'authentification
+// Authentification (génère toutes les routes nécessaires pour l'authentification)
+Auth::routes(); 
 
-// Routes personnalisées pour le contrôleur d'authentification
-Route::post('/login', [AuthUserController::class, 'login'])->name('login');
-Route::post('/logout', [AuthUserController::class, 'logout'])->name('logout');
+// Route personnalisée pour la connexion (post)
+Route::post('/login', [LoginController::class, 'login'])->name('login');
 
-// Page d'accueil
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+// Route personnalisée pour la déconnexion (post)
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+// Page d'accueil protégée par le middleware auth
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home')->middleware('auth');
