@@ -23,12 +23,17 @@ class CategorieController extends Controller
     // Enregistre une nouvelle catégorie
     public function store(Request $request)
     {
+        // Validation ajustée pour utiliser 'Description' au lieu de 'NomCategorie'
         $request->validate([
-            'NomCategorie' => 'required|unique:categories,NomCategorie',
+            'Description' => 'required|string|max:20|unique:categories,Description',
         ]);
 
-        Categorie::create($request->all());
+        // Crée la catégorie en utilisant la colonne 'Description'
+        Categorie::create(['Description' => $request->input('Description')]);
+
         return redirect()->route('categories.index')
                          ->with('success', 'Catégorie créée avec succès.');
     }
+    // Note : Les méthodes 'show', 'edit', 'update', 'destroy' sont manquantes
+    // car vous n'avez pas encore demandé leur implémentation.
 }

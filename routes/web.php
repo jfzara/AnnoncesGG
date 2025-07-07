@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\CustomAuthController;
 use App\Http\Controllers\AnnonceController;
+use App\Http\Controllers\CategorieController; // <-- NOUVELLE LIGNE : Importation du CategorieController
 use Illuminate\Support\Facades\Auth;
 
 /*
@@ -45,6 +46,11 @@ Route::middleware('auth')->group(function () {
     // Routes pour la modification du profil utilisateur (si vous les avez)
     Route::get('/mise-a-jour-profil', [CustomAuthController::class, 'editProfile'])->name('profile.edit');
     Route::put('/profile', [CustomAuthController::class, 'updateProfile'])->name('profile.update');
+
+    // NOUVELLES ROUTES : Routes pour la gestion des catégories
+    Route::get('/categories', [CategorieController::class, 'index'])->name('categories.index');
+    Route::get('/categories/create', [CategorieController::class, 'create'])->name('categories.create');
+    Route::post('/categories', [CategorieController::class, 'store'])->name('categories.store');
 
     // Ajoutez ici d'autres routes qui nécessitent une authentification
 });
