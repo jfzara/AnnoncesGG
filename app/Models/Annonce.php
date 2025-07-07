@@ -11,34 +11,28 @@ class Annonce extends Model
 
     protected $table = 'annonces';          // Nom de votre table
     protected $primaryKey = 'NoAnnonce';    // Votre clé primaire
-    public $incrementing = true;            // Par défaut à true si c'est un auto-incrément
-    protected $keyType = 'int';             // Par défaut à int si c'est un entier
+    public $incrementing = true;            // C'est un auto-incrément
+    protected $keyType = 'int';             // Le type de la clé primaire
 
     // Définir les attributs qui peuvent être massivement assignés
     protected $fillable = [
         'NoUtilisateur',         // Clé étrangère vers l'utilisateur
         'Parution',
-        'Categorie',
+        'Categorie',             // Clé étrangère vers la catégorie
         'DescriptionAbregee',
         'DescriptionComplete',
         'Prix',
         'Photo',
         'MiseAJour',
         'Etat',
-        // 'created_at' et 'updated_at' sont gérés automatiquement par Model si non spécifié comme timestamps personnalisés.
+        'created_at',            // Ajout explicite même si par défaut
+        'updated_at',            // Ajout explicite même si par défaut
     ];
 
-    // Vous n'avez pas besoin de spécifier les timestamps ici si les noms sont 'created_at' et 'updated_at' par défaut.
-    // Si 'Parution' et 'MiseAJour' sont vos timestamps de Laravel, il faudrait le configurer :
-    // const CREATED_AT = 'Parution';
-    // const UPDATED_AT = 'MiseAJour';
-    // Pour l'instant, je vais considérer created_at et updated_at comme vos timestamps de Laravel, et Parution/MiseAJour comme des colonnes standards.
-
-
     /**
-     * Une annonce appartient à un utilisateur (votre relation existante, mais vers le modèle User).
+     * Une annonce appartient à un utilisateur (votre relation existante).
      */
-    public function user() // Nom de la relation: "user" pour coller à Auth::user()
+    public function user() // Le nom de la fonction est 'user' pour Laravel
     {
         // On précise que la clé étrangère sur la table 'annonces' est 'NoUtilisateur'
         // et que la clé locale sur la table 'users' est 'id' (clé primaire du modèle User).
@@ -46,12 +40,12 @@ class Annonce extends Model
     }
 
     /**
-     * Une annonce appartient à une catégorie (votre relation existante).
+     * Une annonce appartient à une catégorie.
      */
     public function categorie()
     {
         // Spécifiez la clé étrangère 'Categorie' sur 'annonces'
-        // et la clé locale 'NoCategorie' sur la table 'categories' (à confirmer si c'est bien 'NoCategorie' pour la PK de catégorie)
+        // et la clé locale 'NoCategorie' sur la table 'categories'.
         return $this->belongsTo(Categorie::class, 'Categorie', 'NoCategorie');
     }
 }

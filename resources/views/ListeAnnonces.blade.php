@@ -1,9 +1,8 @@
-
-
 <!DOCTYPE html>
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
@@ -12,19 +11,27 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    {{-- Ajout de Font Awesome 5 pour les icônes (si vous voulez des icônes plus modernes que 4.7) --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40hNPFNmhMIUTweLLgByJTM53jlkp0EZSCIDUPgKqgNHPDwzthHxpsiphon2WMjY/X7OQXQd/Jsw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <title>FAF - Projet 03</title>
+    <title>Toutes les Annonces - AnnoncesGG</title>
 </head>
 <body>
 <nav class="bg-dark navbar navbar-expand-md row">
     <div class="container">
         <div id="menu" class="collapse navbar-collapse justify-content-center">
             <div class="navbar-nav">
-                <a href="{{ url('/') }}" class="nav-item nav-link text-light">Annonces</a>
-                <a href="{{ url('/gestion-annonces') }}" class="nav-item nav-link text-light">Gestion de vos annonces</a>
-                <a href="{{ url('/mise-a-jour-profil') }}" class="nav-item nav-link text-light">Modification du profil</a>
-                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="nav-item nav-link text-light">Déconnexion</a>
-                <span class="text-light text-center align-middle m-auto"></span>
+                <a href="{{ route('annonces.list') }}" class="nav-item nav-link text-light">Annonces</a>
+                @auth
+                    <a href="{{ route('gestion-annonces') }}" class="nav-item nav-link text-light">Gestion de vos annonces</a>
+                    {{-- Si vous avez une route pour la modification de profil --}}
+                    {{-- <a href="{{ route('profile.edit') }}" class="nav-item nav-link text-light">Modification du profil</a> --}}
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="nav-item nav-link text-light">Déconnexion</a>
+                    <span class="text-light text-center align-middle m-auto ml-2">Bonjour, {{ Auth::user()->name }}</span>
+                @else
+                    <a href="{{ route('login') }}" class="nav-item nav-link text-light">Connexion</a>
+                    <a href="{{ route('register') }}" class="nav-item nav-link text-light">Inscription</a>
+                @endauth
             </div>
         </div>
     </div>
@@ -37,398 +44,248 @@
 @endauth
 
 <br><br>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">Toutes les Annonces</h1>
+
+            {{-- Message de succès/erreur --}}
+            @if (session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            @endif
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            @endif
+
+
+            {{-- Bouton "Créer une annonce" visible si l'utilisateur est connecté --}}
+            @auth
+                <div class="text-end mb-3">
+                    <a href="{{ route('annonces.create') }}" class="btn btn-success"><i class="fas fa-plus"></i> Créer une nouvelle annonce</a>
+                </div>
+            @endauth
+
+            {{-- Votre section de recherche et pagination --}}
+            <div id="divPanel" class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+                <div id="divNbParPage" class="mb-2 mb-md-0 d-flex align-items-center">
+                    <label class="col-form-label me-2 mb-0">Éléments par page : </label>
+                    <select id="ddlNbParPage" class="form-control form-control-sm" style="width: auto;">
+                        <option value="5" {{ request('NbParPage') == 5 ? 'selected' : '' }}>5</option>
+                        <option value="10" {{ request('NbParPage') == 10 ? 'selected' : '' }}>10</option>
+                        <option value="15" {{ request('NbParPage') == 15 ? 'selected' : '' }}>15</option>
+                        <option value="20" {{ request('NbParPage') == 20 ? 'selected' : '' }}>20</option>
+                    </select>
+                    {{-- Le nombre total d'annonces doit venir du contrôleur --}}
+                    <h5 class="text-secondary font-italic ms-3 mb-0">{{ $annonces->count() }} annonces trouvées.</h5>
+                </div>
+                <div id="divRecherche" class="flex-fill d-flex justify-content-end">
+                    <form id="frmRecherche" class="d-flex flex-column" method="GET" action="{{ route('annonces.list') }}">
+                        {{-- Champs cachés pour conserver les paramètres de pagination et nombre par page --}}
+                        <input id="NbParPageInput" name="NbParPage" type="hidden" value="{{ request('NbParPage', 10) }}">
+                        <input id="PageInput" name="Page" type="hidden" value="{{ request('Page', 1) }}">
+
+                        <div id="divRechercheSimple" class="d-flex align-items-center">
+                            <div class="form-group d-inline-flex my-0 me-2">
+                                <label class="col-form-label me-1">Ordre : </label>
+                                <div class="my-auto me-1">
+                                    <select class="form-control form-control-sm" id="TypeOrdre" name="TypeOrdre">
+                                        <option value="Parution" {{ request('TypeOrdre') == 'Parution' ? 'selected' : '' }}>Date</option>
+                                        <option value="NoUtilisateur" {{ request('TypeOrdre') == 'NoUtilisateur' ? 'selected' : '' }}>Auteur</option>
+                                        <option value="Categorie" {{ request('TypeOrdre') == 'Categorie' ? 'selected' : '' }}>Catégorie</option>
+                                    </select>
+                                </div>
+                                <div class="m-auto">
+                                    <select class="form-control form-control-sm" id="Ordre" name="Ordre">
+                                        <option value="ASC" {{ request('Ordre') == 'ASC' ? 'selected' : '' }}>▲</option>
+                                        <option value="DESC" {{ request('Ordre') == 'DESC' ? 'selected' : '' }}>▼</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group d-inline-flex mx-2 my-0">
+                                <div class="m-auto mx-1">
+                                    <input class="form-control form-control-sm" type="text" value="{{ request('Description') }}" id="Description" name="Description" placeholder="Rechercher par description...">
+                                </div>
+                            </div>
+
+                            <input class="btn btn-primary form-control-sm m-auto me-2" type="submit" value="Rechercher">
+                            <button id="btnAfficherAvance" type="button" class="btn btn-secondary font-weight-bold form-control-sm">+</button>
+                        </div>
+
+                        <div id="divRechercheAvancé" class="col-12 mt-2 border pt-2 pr-5" style="display: none;">
+                            <div class="form-group row mb-2">
+                                <label class="col-3 col-form-label">Auteur :</label>
+                                <div class="col-9">
+                                    <input class="form-control form-control-sm" type="text" id="Auteur" name="Auteur" value="{{ request('Auteur') }}" placeholder="Nom de l'auteur">
+                                </div>
+                            </div>
+                            <div class="form-group row mb-2">
+                                <label class="col-3 col-form-label">Catégorie :</label>
+                                <div class="col-9">
+                                    <select class="form-control form-control-sm" id="CategorieSelect" name="Categorie">
+                                        <option value="">Toutes</option>
+                                        @foreach($categories as $categorie)
+                                            <option value="{{ $categorie->NoCategorie }}" {{ request('Categorie') == $categorie->NoCategorie ? 'selected' : '' }}>{{ $categorie->Description }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row mb-2">
+                                <label class="col-3 col-form-label">Date :</label>
+                                <div class="col-4">
+                                    <input class="form-control form-control-sm" type="date" id="DateDebut" name="DateDebut" value="{{ request('DateDebut') }}">
+                                </div>
+                                <p class="col-1 p-0 m-auto text-center">à</p>
+                                <div class="col-4">
+                                    <input class="form-control form-control-sm" type="date" id="DateFin" name="DateFin" value="{{ request('DateFin') }}">
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary btn-sm">Appliquer les filtres</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <hr>
+
+            <div id="divListe" class="d-flex flex-wrap justify-content-around mt-2">
+                @if ($annonces->isEmpty())
+                    <div class="alert alert-warning w-100" role="alert">
+                        Aucune annonce ne correspond à votre recherche.
+                    </div>
+                @else
+                    @foreach ($annonces as $annonce)
+                        <div class="m-3">
+                            <div class="card annonce" style="width: 300px; height: 450px;"> {{-- Augmenté la hauteur pour les boutons --}}
+                                <div class="card-header d-flex justify-content-between py-1">
+                                    <div class="text-left">#{{ $annonce->NoAnnonce }}</div>
+                                    <div class="text-right">{{ $annonce->categorie->Description ?? 'N/A' }}</div>
+                                </div>
+                                <div class="overflow-hidden text-center imageSize" style="height: 200px; display: flex; align-items: center; justify-content: center;">
+                                    @if ($annonce->Photo)
+                                        <img src="{{ asset('storage/' . $annonce->Photo) }}" alt="{{ $annonce->DescriptionAbregee }}" class="img-fluid" style="max-height: 100%; width: auto;">
+                                    @else
+                                        <img src="{{ asset('images/placeholder.png') }}" alt="Pas d'image" class="img-fluid" style="max-height: 100%; width: auto;">
+                                    @endif
+                                </div>
+                                <div class="card-body pb-1 d-flex flex-column">
+                                    <h6 class="card-title flex-grow-0"><a href="{{ route('annonces.show', $annonce->NoAnnonce) }}">{{ $annonce->DescriptionAbregee }}</a></h6>
+                                    <p class="card-text text-muted flex-grow-1" style="font-size: 0.85em;">{{ Str::limit($annonce->DescriptionComplete, 50) }}</p> {{-- Ajouté un Str::limit --}}
+                                    <div class="d-flex justify-content-between align-items-center mt-auto"> {{-- mt-auto pousse au bas --}}
+                                        <div class="text-left">
+                                            <a href="mailto:{{ $annonce->user->email ?? '#' }}">{{ $annonce->user->name ?? 'Utilisateur inconnu' }}</a>
+                                        </div>
+                                        <div class="text-right font-weight-bold">
+                                            <span>{{ number_format($annonce->Prix, 2, ',', ' ') }} {{ $annonce->Prix > 0 ? '$' : '' }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer d-flex justify-content-between align-items-center py-0">
+                                    <div class="text-left" style="font-size: 0.75em;">{{ \Carbon\Carbon::parse($annonce->Parution)->format('Y-m-d H:i') }}</div>
+                                    <div class="text-right d-flex">
+                                        {{-- Boutons Modifier/Supprimer conditionnels pour le propriétaire --}}
+                                        @auth
+                                            {{-- Pour l'instant, seulement le propriétaire. L'admin viendra après. --}}
+                                            @if (Auth::id() === $annonce->NoUtilisateur)
+                                                <a href="{{ route('annonces.edit', $annonce->NoAnnonce) }}" class="btn btn-warning btn-sm ms-1" title="Modifier"><i class="fas fa-edit"></i></a>
+                                                <form action="{{ route('annonces.destroy', $annonce->NoAnnonce) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger btn-sm ms-1" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette annonce ?');" title="Supprimer"><i class="fas fa-trash-alt"></i></button>
+                                                </form>
+                                            @endif
+                                        @endauth
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                @endif
+            </div>
+
+            {{-- Liens de pagination (à implémenter dans le contrôleur si vous ne l'avez pas déjà fait) --}}
+            {{-- Si votre contrôleur utilise ->paginate(), vous pouvez ajouter ceci : --}}
+            {{-- <div class="d-flex justify-content-center mt-4">
+                {{ $annonces->links() }}
+            </div> --}}
+        </div>
+    </div>
+</div>
+
 <script>
-    let booAfficherAvance = false;
+    // Script JavaScript existant, adapté pour Laravel
+    let booAfficherAvance = false; // Par défaut, la recherche avancée est masquée
 
     function changerParam(strParam, strValeur) {
-        const queryString = window.location.search;
-        const urlParams = new URLSearchParams(queryString);
+        const urlParams = new URLSearchParams(window.location.search);
         urlParams.set(strParam, strValeur);
 
-        window.location = '{{ url('/liste-annonces') }}?' + urlParams.toString();
+        // Mettre à jour les champs cachés avant de soumettre
+        document.getElementById(strParam + 'Input').value = strValeur;
+
+        // Soumettre le formulaire de recherche pour appliquer les filtres et la pagination
+        document.getElementById('frmRecherche').submit();
     }
 
-    let intPage = 1;
-    let intPageMax = 4;
-
-    if (intPageMax > 0 && intPage > intPageMax)
-        changerParam('Page', intPageMax);
-
     $(document).ready(() => {
-        $('#ddlPage').change(function () {
-            changerParam('Page', this.value);
-        });
+        // Initialiser les valeurs cachées avec les valeurs actuelles de l'URL
+        $('#NbParPageInput').val(new URLSearchParams(window.location.search).get('NbParPage') || '10');
+        $('#PageInput').val(new URLSearchParams(window.location.search).get('Page') || '1');
+
 
         $('#ddlNbParPage').change(function () {
             changerParam('NbParPage', this.value);
         });
+
+        // La logique de pagination n'est pas directement gérée par ce script ici.
+        // Si vous utilisez la pagination de Laravel (->paginate()), les liens générés par $annonces->links()
+        // géreront automatiquement le paramètre 'Page'.
+        // Si vous avez un ddlPage, vous devriez le lier comme ceci :
+        // $('#ddlPage').change(function () {
+        //     changerParam('Page', this.value);
+        // });
+
 
         $('#btnAfficherAvance').click(function () {
             booAfficherAvance = !booAfficherAvance;
             this.innerText = booAfficherAvance ? '-' : '+';
 
             if (booAfficherAvance)
-                $('#divRechercheAvancé').slideDown(0);
+                $('#divRechercheAvancé').slideDown(200); // Utilise un peu d'animation
             else
-                $('#divRechercheAvancé').slideUp(0);
+                $('#divRechercheAvancé').slideUp(200); // Utilise un peu d'animation
         });
 
-        $('#divRechercheAvancé').slideUp(0);
+        // Initialiser l'état de la recherche avancée au chargement de la page
+        // Si des paramètres de recherche avancée sont présents dans l'URL, l'afficher
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('Auteur') || urlParams.has('Categorie') || urlParams.has('DateDebut') || urlParams.has('DateFin')) {
+            booAfficherAvance = true;
+            $('#btnAfficherAvance').text('-');
+            $('#divRechercheAvancé').slideDown(0);
+        } else {
+            $('#divRechercheAvancé').slideUp(0);
+        }
+
+        // Pour que les ordres et descriptions soient soumis avec le formulaire
+        $('#TypeOrdre, #Ordre, #Description, #Auteur, #CategorieSelect, #DateDebut, #DateFin').change(function() {
+            // Pas besoin de changerParam ici car le formulaire sera soumis via le bouton de recherche
+            // ou via ddlNbParPage/ddlPage. Cela assure que les valeurs sont à jour.
+        });
     });
 </script>
-
-<style>
-    .annonce {
-        width: 300px;
-        height: 400px;
-    }
-
-    .imageSize {
-        height: 250px;
-    }
-</style>
-
-
-    <div id="divPanel" class="d-flex">
-    <div id="divNbParPage" class="ml-3 text-left flex-fill">
-        <div class="d-inline-flex" style="width: 100%">
-            <label class="col-form-label">Éléments par page : </label>
-            <select id="ddlNbParPage" class="form-control form-control-sm col-1 my-auto mx-2 p-0">
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="15">15</option>
-                <option value="20">20</option>
-            </select>
-        </div>
-        <h5 class="text-secondary font-italic">20 annonces trouvées.</h5>
-    </div>
-    <div id="divRecherche" class="flex-fill">
-        <div class="text-left float-right" style="width: 50%">
-            <form id="frmRecherche" class="d-flex flex-column" method="GET" action="{{ url('/liste-annonces') }}">
-                <input id="NbParPage" name="NbParPage" type="hidden" value="">
-                <input id="Page" name="Page" type="hidden" value="">
-                <div id="divRechercheSimple">
-                    <div class="form-group d-inline-flex my-0">
-                        <label class="col-form-label">Ordre : </label>
-                        <div class="my-auto mx-1">
-                            <select class="form-control form-control-sm" id="TypeOrdre" name="TypeOrdre">
-                                <option value="Date">Date</option>
-                                <option value="Auteur">Auteur</option>
-                                <option value="Categorie">Catégorie</option>
-                            </select>
-                        </div>
-                        <div class="m-auto">
-                            <select class="form-control form-control-sm" id="Ordre" name="Ordre">
-                                <option value="ASC">▲</option>
-                                <option value="DESC">▼</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group d-inline-flex mx-2 my-0">
-                        <div class="m-auto mx-1">
-                            <input class="form-control form-control-sm" type="text" value="" id="Description" name="Description">
-                        </div>
-                    </div>
-
-                    <input class="btn btn-primary form-control-sm m-auto" type="submit" value="Rechercher">
-                    <button id="btnAfficherAvance" type="button" class="btn btn-secondary font-weight-bold form-control-sm">+</button>
-                </div>
-
-                <div id="divRechercheAvancé" class="col-12 mt-2 border pt-2 pr-5" style="display: none;">
-                    <div class="form-group row">
-                        <label class="col-3">Auteur :</label>
-                        <input class="col form-control form-control-sm" type="text" id="Auteur" name="Auteur" value="">
-                    </div>
-                    <div class="form-group row">
-                        <label class="col-3">Catégorie :</label>
-                        <select class="col form-control form-control-sm" id="Categorie" name="Categorie">
-                            <option value="">Toutes</option>
-                            <option value="1">Location</option>
-                            <option value="2">Recherche</option>
-                            <option value="3">À vendre</option>
-                            <option value="4">À donner</option>
-                            <option value="5">Service offert</option>
-                            <option value="6">Autre</option>
-                        </select>
-                    </div>
-                    <div class="form-group row">
-                        <label class="col-3">Date :</label>
-                        <input class="col form-control form-control-sm mx-1" type="date" id="DateDebut" name="DateDebut" value="">
-                        <p class="p-0 m-auto">à</p>
-                        <input class="col form-control form-control-sm mx-1" type="date" id="DateFin" name="DateFin" value="">
-                    </div>
-                </div>
-
-            </form>
-        </div>
-    </div>
-</div>
-
-<hr>
-
-<div id="divListe" class="d-flex flex-wrap justify-content-around mt-2 border-secondary">
-
-{{-- Annonce 1 --}}
-<div id="divAnnonce-1" class="m-3">
-    <div class="card annonce">
-        <div class="card-header d-flex justify-content-between py-1">
-            <div class="text-left">#1</div>
-            <div class="text-right">À vendre</div>
-        </div>
-        <div class="overflow-hidden text-right imageSize">
-            <img src="{{ asset('photos-annonce/velo-route.jpg') }}" alt="Vélo de montagne" width="300" class="m-auto">
-        </div>
-        <div class="card-body pb-1">
-            <h6 class="card-title"><a href="{{ url('Annonce.php?id=1') }}">Vélo de montagne</a></h6> {{-- À adapter si vous avez une route Laravel pour Annonce.php --}}
-            <div class="d-flex justify-content-between">
-                <div class="text-left">
-                    <a href="mailto:exemple1@test.test">Jean Dupont</a>
-                </div>
-                <div class="text-right font-weight-bold"><span>150.00 $</span></div>
-            </div>
-        </div>
-        <div class="card-footer d-flex justify-content-between py-0">
-            <div class="text-left">2024-09-01 10:00:00</div>
-            <div class="text-right font-italic">3</div>
-        </div>
-    </div>
-</div>
-
-{{-- Annonce 2 --}}
-<div id="divAnnonce-2" class="m-3">
-    <div class="card annonce">
-        <div class="card-header d-flex justify-content-between py-1">
-            <div class="text-left">#2</div>
-            <div class="text-right">Location</div>
-        </div>
-        <div class="overflow-hidden text-right imageSize">
-            <img alt="Image de l'annonce 2" src="{{ asset('photos-annonce/artisanat.jpg') }}" width="300" class="m-auto">
-        </div>
-        <div class="card-body pb-1">
-            <h6 class="card-title"><a href="{{ url('Annonce.php?id=2') }}">Appartement en centre-ville</a></h6>
-            <div class="d-flex justify-content-between">
-                <div class="text-left">
-                    <a href="mailto:exemple2@test.test">Marie Curie</a>
-                </div>
-                <div class="text-right font-weight-bold"><span>850.00 $/mois</span></div>
-            </div>
-        </div>
-        <div class="card-footer d-flex justify-content-between py-0">
-            <div class="text-left">2024-09-02 11:30:00</div>
-            <div class="text-right font-italic">2</div>
-        </div>
-    </div>
-</div>
-
-{{-- Annonce 3 --}}
-<div id="divAnnonce-3" class="m-3">
-    <div class="card annonce">
-        <div class="card-header d-flex justify-content-between py-1">
-            <div class="text-left">#3</div>
-            <div class="text-right">À donner</div>
-        </div>
-        <div class="overflow-hidden text-right imageSize">
-            <img alt="Image de l'annonce 3" src="{{ asset('photos-annonce/Sofa.jpg') }}" width="300" class="m-auto">
-        </div>
-        <div class="card-body pb-1">
-            <h6 class="card-title"><a href="{{ url('Annonce.php?id=3') }}">Canapé en bon état</a></h6>
-            <div class="d-flex justify-content-between">
-                <div class="text-left">
-                    <a href="mailto:exemple3@test.test">Sophie Martin</a>
-                </div>
-                <div class="text-right font-weight-bold"><span>Gratuit</span></div>
-            </div>
-        </div>
-        <div class="card-footer d-flex justify-content-between py-0">
-            <div class="text-left">2024-09-03 09:15:00</div>
-            <div class="text-right font-italic">0</div>
-        </div>
-    </div>
-</div>
-
-{{-- Annonce 4 --}}
-<div id="divAnnonce-4" class="m-3">
-    <div class="card annonce">
-        <div class="card-header d-flex justify-content-between py-1">
-            <div class="text-left">#4</div>
-            <div class="text-right">Service offert</div>
-        </div>
-        <div class="overflow-hidden text-right imageSize">
-            <img alt="Image de l'annonce 4" src="{{ asset('photos-annonce/Consoles.jpg') }}" width="300" class="m-auto">
-        </div>
-        <div class="card-body pb-1">
-            <h6 class="card-title"><a href="{{ url('Annonce.php?id=4') }}">Cours de guitare</a></h6>
-            <div class="d-flex justify-content-between">
-                <div class="text-left">
-                    <a href="mailto:exemple4@test.test">Pierre Lemoine</a>
-                </div>
-                <div class="text-right font-weight-bold"><span>30.00 $/heure</span></div>
-            </div>
-        </div>
-        <div class="card-footer d-flex justify-content-between py-0">
-        <div class="text-left">2024-09-04 16:00:00</div>
-            <div class="text-right font-italic">1</div>
-        </div>
-    </div>
-</div>
-
-{{-- Annonce 5 --}}
-<div id="divAnnonce-5" class="m-3">
-    <div class="card annonce">
-        <div class="card-header d-flex justify-content-between py-1">
-            <div class="text-left">#5</div>
-            <div class="text-right">À vendre</div>
-        </div>
-        <div class="overflow-hidden text-right imageSize">
-            <img alt="Image de l'annonce 5" src="{{ asset('photos-annonce/ordinateur-portable.jpg') }}" width="300" class="m-auto">
-        </div>
-        <div class="card-body pb-1">
-            <h6 class="card-title"><a href="{{ url('Annonce.php?id=5') }}">Ordinateur portable</a></h6>
-            <div class="d-flex justify-content-between">
-                <div class="text-left">
-                    <a href="mailto:exemple5@test.test">Claire Dubois</a>
-                </div>
-                <div class="text-right font-weight-bold"><span>500.00 $</span></div>
-            </div>
-        </div>
-        <div class="card-footer d-flex justify-content-between py-0">
-            <div class="text-left">2024-09-05 14:20:00</div>
-            <div class="text-right font-italic">5</div>
-        </div>
-    </div>
-</div>
-
-{{-- Annonce 6 --}}
-<div id="divAnnonce-6" class="m-3">
-    <div class="card annonce">
-        <div class="card-header d-flex justify-content-between py-1">
-            <div class="text-left">#6</div>
-            <div class="text-right">Recherche</div>
-        </div>
-        <div class="overflow-hidden text-right imageSize">
-            <img alt="Image de l'annonce 6" src="{{ asset('photos-annonce/Table de jardin.jpg') }}" width="300" class="m-auto">
-        </div>
-        <div class="card-body pb-1">
-            <h6 class="card-title"><a href="{{ url('Annonce.php?id=6') }}">Recherche table à manger</a></h6>
-            <div class="d-flex justify-content-between">
-                <div class="text-left">
-                    <a href="mailto:exemple6@test.test">Marc Tremblay</a>
-                </div>
-                <div class="text-right font-weight-bold"><span>N/A</span></div>
-            </div>
-        </div>
-        <div class="card-footer d-flex justify-content-between py-0">
-            <div class="text-left">2024-09-06 09:45:00</div>
-            <div class="text-right font-italic">7</div>
-        </div>
-    </div>
-</div>
-
-{{-- Annonce 7 --}}
-<div id="divAnnonce-7" class="m-3">
-    <div class="card annonce">
-        <div class="card-header d-flex justify-content-between py-1">
-            <div class="text-left">#7</div>
-            <div class="text-right">À vendre</div>
-        </div>
-        <div class="overflow-hidden text-right imageSize">
-            <img alt="Image de l'annonce 7" src="{{ asset('photos-annonce/Téléviseur à écran plat.jpg') }}" width="300" class="m-auto">
-        </div>
-        <div class="card-body pb-1">
-            <h6 class="card-title"><a href="{{ url('Annonce.php?id=7') }}">Télévision 4K</a></h6>
-            <div class="d-flex justify-content-between">
-                <div class="text-left">
-                    <a href="mailto:exemple7@test.test">Julie Lambert</a>
-                </div>
-                <div class="text-right font-weight-bold"><span>300.00 $</span></div>
-            </div>
-        </div>
-        <div class="card-footer d-flex justify-content-between py-0">
-            <div class="text-left">2024-09-07 18:00:00</div>
-            <div class="text-right font-italic">4</div>
-        </div>
-    </div>
-</div>
-
-{{-- Annonce 8 --}}
-<div id="divAnnonce-8" class="m-3">
-    <div class="card annonce">
-        <div class="card-header d-flex justify-content-between py-1">
-            <div class="text-left">#8</div>
-            <div class="text-right">À donner</div>
-        </div>
-        <div class="overflow-hidden text-right imageSize">
-            <img alt="Image de l'annonce 8" src="{{ asset('photos-annonce/Vetements.jpg') }}" width="300" class="m-auto">
-        </div>
-        <div class="card-body pb-1">
-            <h6 class="card-title"><a href="{{ url('Annonce.php?id=8') }}">Vêtements pour enfants</a></h6>
-            <div class="d-flex justify-content-between">
-                <div class="text-left">
-                    <a href="mailto:exemple8@test.test">Nathalie Roy</a>
-                </div>
-                <div class="text-right font-weight-bold"><span>Gratuit</span></div>
-            </div>
-        </div>
-        <div class="card-footer d-flex justify-content-between py-0">
-            <div class="text-left">2024-09-08 13:30:00</div>
-            <div class="text-right font-italic">9</div>
-        </div>
-    </div>
-</div>
-
-{{-- Annonce 9 --}}
-<div id="divAnnonce-9" class="m-3">
-    <div class="card annonce">
-        <div class="card-header d-flex justify-content-between py-1">
-            <div class="text-left">#9</div>
-            <div class="text-right">Service offert</div>
-        </div>
-        <div class="overflow-hidden text-right imageSize">
-            <img alt="Image de l'annonce 9" src="{{ asset('photos-annonce/robot culinaire.jpg') }}" width="300" class="m-auto">
-        </div>
-        <div class="card-body pb-1">
-            <h6 class="card-title"><a href="{{ url('Annonce.php?id=9') }}">Cours de cuisine</a></h6>
-            <div class="d-flex justify-content-between">
-                <div class="text-left">
-                    <a href="mailto:exemple9@test.test">Charles Gagnon</a>
-                </div>
-                <div class="text-right font-weight-bold"><span>50.00 $/cours</span></div>
-            </div>
-        </div>
-        <div class="card-footer d-flex justify-content-between py-0">
-            <div class="text-left">2024-09-09 15:45:00</div>
-            <div class="text-right font-italic">6</div>
-        </div>
-    </div>
-</div>
-
-{{-- Annonce 10 --}}
-<div id="divAnnonce-10" class="m-3">
-    <div class="card annonce">
-        <div class="card-header d-flex justify-content-between py-1">
-            <div class="text-left">#10</div>
-            <div class="text-right">À vendre</div>
-        </div>
-        <div class="overflow-hidden text-right imageSize">
-            <img alt="Image de l'annonce 10" src="{{ asset('photos-annonce/Livres de collection.jpg') }}" width="300" class="m-auto">
-        </div>
-        <div class="card-body pb-1">
-            <h6 class="card-title"><a href="{{ url('Annonce.php?id=10') }}">Livres de collection</a></h6>
-            <div class="d-flex justify-content-between">
-                <div class="text-left">
-                    <a href="mailto:exemple10@test.test">Isabelle Tremblay</a>
-                </div>
-                <div class="text-right font-weight-bold"><span>100.00 $</span></div>
-            </div>
-        </div>
-        <div class="card-footer d-flex justify-content-between py-0">
-            <div class="text-left">2024-09-10 17:30:00</div>
-            <div class="text-right font-italic">8</div>
-        </div>
-    </div>
-</div>
-
-</div>
 </body>
 </html>

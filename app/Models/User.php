@@ -10,14 +10,11 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    // Laravel devinera que la table est 'users' et que la clé primaire est 'id'.
-    // Pas besoin de protected $table = 'users'; ni protected $primaryKey = 'id';
-
     protected $fillable = [
         'name',
         'email',
         'password',
-        'role', // N'oubliez pas d'ajouter 'role' ici
+        'role', // Ajout de la colonne 'role'
     ];
 
     protected $hidden = [
@@ -35,8 +32,8 @@ class User extends Authenticatable
      */
     public function annonces()
     {
-        // On indique à Laravel que la clé étrangère dans la table 'annonces' qui lie à l'utilisateur est 'NoUtilisateur',
-        // et que la clé locale sur la table 'users' (celle-ci) est 'id'.
+        // Spécifiez la clé étrangère 'NoUtilisateur' dans la table 'annonces'
+        // et la clé locale 'id' dans la table 'users'.
         return $this->hasMany(Annonce::class, 'NoUtilisateur', 'id');
     }
 

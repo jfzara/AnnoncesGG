@@ -2,7 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\CustomAuthController;
-use Illuminate\Support\Facades\Auth; // N'oubliez pas d'importer Auth si ce n'est pas déjà fait
+use App\Http\Controllers\AnnonceController;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,26 +28,26 @@ Route::post('/logout', [CustomAuthController::class, 'logout'])->name('logout');
 Route::get('/register', [CustomAuthController::class, 'register'])->name('register');
 Route::post('/register', [CustomAuthController::class, 'registerPost'])->name('register.post');
 
+// Routes publiques pour afficher toutes les annonces (même pour les non-connectés)
+Route::get('/annonces', [AnnonceController::class, 'index'])->name('annonces.list');
+
 // Routes protégées par l'authentification
 Route::middleware('auth')->group(function () {
-    // La vraie page d'accueil après connexion : Liste des Annonces
-    Route::get('/annonces', function () {
-        return view('ListeAnnonces');
-    })->name('annonces.list');
+    // Route pour la gestion des annonces de l'utilisateur (tableau de bord)
+    Route::get('/gestion-annonces', [AnnonceController::class, 'gererAnnonces'])->name('gestion-annonces');
 
-    // Route pour la gestion des annonces de l'utilisateur
-    Route::get('/gestion-annonces', function () {
-        return view('GestionAnnonces'); // Charger la vue GestionAnnonces.blade.php
-    })->name('gestion-annonces');
+    // Routes CRUD pour les annonces (création, édition, suppression, etc.)
+    // La méthode 'resource' crée automatiquement les routes pour create, store, edit, update, destroy.
+    // 'except(['index', 'show'])' signifie que les routes index et show ne sont PAS protégées par auth,
+    // car elles sont publiques (définies plus haut).
+    Route::resource('annonces', AnnonceController::class)->except(['index', 'show']);
 
-    // Route pour la modification du profil utilisateur
-    // Cette route utilise votre vue MiseAJourProfil.blade.php
+    // Routes pour la modification du profil utilisateur (si vous les avez)
     Route::get('/mise-a-jour-profil', [CustomAuthController::class, 'editProfile'])->name('profile.edit');
-    // Assurez-vous que la méthode editProfile dans CustomAuthController retourne bien view('MiseAJourProfil')
     Route::put('/profile', [CustomAuthController::class, 'updateProfile'])->name('profile.update');
 
     // Ajoutez ici d'autres routes qui nécessitent une authentification
-    // Exemple pour Annonce.php:
-    // Route::get('/annonce/{id}', [AnnonceController::class, 'show'])->name('annonce.show');
-    // Vous auriez besoin d'un AnnonceController et d'une vue Annonce.blade.php pour cela.
 });
+
+// Route publique pour l'affichage d'une annonce spécifique (accessible à tous)
+Route::get('/annonces/{annonce}', [AnnonceController::class, 'show'])->name('annonces.show');

@@ -12,10 +12,8 @@ class Categorie extends Model
     protected $table = 'categories';
     protected $primaryKey = 'NoCategorie';
 
-    // Les colonnes que vous pourriez vouloir assigner massivement
     protected $fillable = [
-        'Description', // Correspond à votre colonne 'Description'
-        // 'created_at', 'updated_at' sont gérés automatiquement
+        'Description', // Correspond à votre colonne 'Description' pour le nom de la catégorie
     ];
 
     /**
@@ -23,9 +21,8 @@ class Categorie extends Model
      */
     public function annonces()
     {
-        // La clé étrangère sur la table 'annonces' est 'Categorie' (votre colonne).
-        // La clé locale sur la table 'categories' est 'NoCategorie' (votre clé primaire).
-        // Laravel déduira la clé locale, mais la spécifier est plus explicite.
+        // La clé étrangère sur la table 'annonces' est 'Categorie'.
+        // La clé locale sur la table 'categories' est 'NoCategorie'.
         return $this->hasMany(Annonce::class, 'Categorie', 'NoCategorie');
     }
 }
