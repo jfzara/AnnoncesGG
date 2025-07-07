@@ -24,7 +24,7 @@
                 <a href="{{ url('/gestion-annonces') }}" class="nav-item nav-link text-light">Gestion de vos annonces</a>
                 <a href="{{ url('/mise-a-jour-profil') }}" class="nav-item nav-link text-light">Modification du profil</a>
                 <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="nav-item nav-link text-light">Déconnexion</a>
-                <span class="text-light text-center align-middle m-auto">(test@test.test)</span>
+                <span class="text-light text-center align-middle m-auto"></span>
             </div>
         </div>
     </div>
