@@ -1,4 +1,5 @@
-<!-- resources/views/ListeAnnonces.blade.php -->
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -19,15 +20,22 @@
     <div class="container">
         <div id="menu" class="collapse navbar-collapse justify-content-center">
             <div class="navbar-nav">
-                <a href="ListeAnnonces.php" class="nav-item nav-link text-light">Annonces</a>
-                <a href="GestionAnnonces.php" class="nav-item nav-link text-light">Gestion de vos annonces</a>
-                <a href="miseAJourProfil.php" class="nav-item nav-link text-light">Modification du profil</a>
-                <a href="Deconnexion.php" class="nav-item nav-link text-light">Déconnexion</a>
+                <a href="{{ url('/') }}" class="nav-item nav-link text-light">Annonces</a>
+                <a href="{{ url('/gestion-annonces') }}" class="nav-item nav-link text-light">Gestion de vos annonces</a>
+                <a href="{{ url('/mise-a-jour-profil') }}" class="nav-item nav-link text-light">Modification du profil</a>
+                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="nav-item nav-link text-light">Déconnexion</a>
                 <span class="text-light text-center align-middle m-auto">(test@test.test)</span>
             </div>
         </div>
     </div>
 </nav>
+
+@auth
+<form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+    @csrf
+</form>
+@endauth
+
 <br><br>
 <script>
     let booAfficherAvance = false;
@@ -37,7 +45,7 @@
         const urlParams = new URLSearchParams(queryString);
         urlParams.set(strParam, strValeur);
 
-        window.location = './ListeAnnonces.php?' + urlParams.toString();
+        window.location = '{{ url('/liste-annonces') }}?' + urlParams.toString();
     }
 
     let intPage = 1;
@@ -81,7 +89,6 @@
 </style>
 
 
-
     <div id="divPanel" class="d-flex">
     <div id="divNbParPage" class="ml-3 text-left flex-fill">
         <div class="d-inline-flex" style="width: 100%">
@@ -97,7 +104,7 @@
     </div>
     <div id="divRecherche" class="flex-fill">
         <div class="text-left float-right" style="width: 50%">
-            <form id="frmRecherche" class="d-flex flex-column" method="GET" action="ListeAnnonces.php">
+            <form id="frmRecherche" class="d-flex flex-column" method="GET" action="{{ url('/liste-annonces') }}">
                 <input id="NbParPage" name="NbParPage" type="hidden" value="">
                 <input id="Page" name="Page" type="hidden" value="">
                 <div id="divRechercheSimple">
@@ -162,164 +169,7 @@
 
 <div id="divListe" class="d-flex flex-wrap justify-content-around mt-2 border-secondary">
 
-
-<div id="divAnnonce-1" class="m-3">
-        <div class="card annonce">
-            <div class="card-header d-flex justify-content-between py-1">
-                <div class="text-left">#1</div>
-                <div class="text-right">À vendre</div>
-            </div>
-            <div class="overflow-hidden text-right imageSize">
-            <img src="{{ asset('photos-annonce/velo-route.jpg') }}"  alt="Vélo de montagne" width="300" class="m-auto">
-            </div>
-            <div class="card-body pb-1">
-                <h6 class="card-title"><a href="Annonce.php?id=1">Vélo de montagne</a></h6>
-                <div class="d-flex justify-content-between">
-                    <div class="text-left">
-                        <a href="mailto:exemple1@test.test">Jean Dupont</a>
-                    </div>
-                    <div class="text-right font-weight-bold"><span>150.00 $</span></div>
-                </div>
-            </div>
-            <div class="card-footer d-flex justify-content-between py-0">
-                <div class="text-left">2024-09-01 10:00:00</div>
-                <div class="text-right font-italic">3</div>
-            </div>
-        </div>
-    </div>
-
-   <!--  <div id="divAnnonce-2" class="m-3">
-        <div class="card annonce">
-            <div class="card-header d-flex justify-content-between py-1">
-                <div class="text-left">#2</div>
-                <div class="text-right">Location</div>
-            </div>
-            <div class="overflow-hidden text-right imageSize">
-                <img alt="Image de l'annonce 2" src="photos-annonce/test2.jpg" width="300" class="m-auto">
-            </div>
-            <div class="card-body pb-1">
-                <h6 class="card-title"><a href="Annonce.php?id=2">Appartement en centre-ville</a></h6>
-                <div class="d-flex justify-content-between">
-                    <div class="text-left">
-                        <a href="mailto:exemple2@test.test">Marie Curie</a>
-                    </div>
-                    <div class="text-right font-weight-bold"><span>850.00 $/mois</span></div>
-                </div>
-            </div>
-            <div class="card-footer d-flex justify-content-between py-0">
-                <div class="text-left">2024-09-02 11:30:00</div>
-                <div class="text-right font-italic">2</div>
-            </div>
-        </div>
-    </div>
-
-    <div id="divAnnonce-3" class="m-3">
-        <div class="card annonce">
-            <div class="card-header d-flex justify-content-between py-1">
-                <div class="text-left">#3</div>
-                <div class="text-right">À donner</div>
-            </div>
-            <div class="overflow-hidden text-right imageSize">
-                <img alt="Image de l'annonce 3" src="photos-annonce/test3.jpg" width="300" class="m-auto">
-            </div>
-            <div class="card-body pb-1">
-                <h6 class="card-title"><a href="Annonce.php?id=3">Canapé en bon état</a></h6>
-                <div class="d-flex justify-content-between">
-                    <div class="text-left">
-                        <a href="mailto:exemple3@test.test">Sophie Martin</a>
-                    </div>
-                    <div class="text-right font-weight-bold"><span>Gratuit</span></div>
-                </div>
-            </div>
-            <div class="card-footer d-flex justify-content-between py-0">
-                <div class="text-left">2024-09-03 09:15:00</div>
-                <div class="text-right font-italic">0</div>
-            </div>
-        </div>
-    </div>
-
-    <div id="divAnnonce-4" class="m-3">
-        <div class="card annonce">
-            <div class="card-header d-flex justify-content-between py-1">
-                <div class="text-left">#4</div>
-                <div class="text-right">Service offert</div>
-            </div>
-            <div class="overflow-hidden text-right imageSize">
-                <img alt="Image de l'annonce 4" src="photos-annonce/test4.jpg" width="300" class="m-auto">
-            </div>
-            <div class="card-body pb-1">
-                <h6 class="card-title"><a href="Annonce.php?id=4">Cours de guitare</a></h6>
-                <div class="d-flex justify-content-between">
-                    <div class="text-left">
-                        <a href="mailto:exemple4@test.test">Pierre Lemoine</a>
-                    </div>
-                    <div class="text-right font-weight-bold"><span>30.00 $/heure</span></div>
-                </div>
-            </div>
-            <div class="card-footer d-flex justify-content-between py-0">
-                <div class="text-left">2024-09-04 14:00:00</div>
-                <div class="text-right font-italic">1</div>
-            </div>
-        </div>
-    </div>
-
-    <div id="divAnnonce-5" class="m-3">
-        <div class="card annonce">
-            <div class="card-header d-flex justify-content-between py-1">
-                <div class="text-left">#5</div>
-                <div class="text-right">À vendre</div>
-            </div>
-            <div class="overflow-hidden text-right imageSize">
-                <img alt="Image de l'annonce 5" src="photos-annonce/test5.jpg" width="300" class="m-auto">
-            </div>
-            <div class="card-body pb-1">
-                <h6 class="card-title"><a href="Annonce.php?id=5">Table en bois massif</a></h6>
-                <div class="d-flex justify-content-between">
-                    <div class="text-left">
-                        <a href="mailto:exemple5@test.test">Lucie Dupuis</a>
-                    </div>
-                    <div class="text-right font-weight-bold"><span>250.00 $</span></div>
-                </div>
-            </div>
-            <div class="card-footer d-flex justify-content-between py-0">
-                <div class="text-left">2024-09-05 16:20:00</div>
-                <div class="text-right font-italic">2</div>
-            </div>
-        </div>
-    </div>
-
-    <div id="divAnnonce-6" class="m-3">
-        <div class="card annonce">
-            <div class="card-header d-flex justify-content-between py-1">
-                <div class="text-left">#6</div>
-                <div class="text-right">Recherche</div>
-            </div>
-            <div class="overflow-hidden text-right imageSize">
-                <img alt="Image de l'annonce 6" src="photos-annonce/test6.jpg" width="300" class="m-auto">
-            </div>
-            <div class="card-body pb-1">
-                <h6 class="card-title"><a href="Annonce.php?id=6">Recherche babysitter</a></h6>
-                <div class="d-flex justify-content-between">
-                    <div class="text-left">
-                        <a href="mailto:exemple6@test.test">Anna Lefebvre</a>
-                    </div>
-                    <div class="text-right font-weight-bold"><span>À discuter</span></div>
-                </div>
-            </div>
-            <div class="card-footer d-flex justify-content-between py-0">
-                <div class="text-left">2024-09-06 12:45:00</div>
-                <div class="text-right font-italic">3</div>
-            </div>
-        </div>
-    </div>
-
-   
-   
-   
-   
-
-
-
+{{-- Annonce 1 --}}
 <div id="divAnnonce-1" class="m-3">
     <div class="card annonce">
         <div class="card-header d-flex justify-content-between py-1">
@@ -327,10 +177,10 @@
             <div class="text-right">À vendre</div>
         </div>
         <div class="overflow-hidden text-right imageSize">
-            <img alt="Image de l'annonce 1" src="C:\wamp64\www\Zara-projetfinal\Zara-projetfinal\photos-annonce\velo-route.jpg" width="300" class="m-auto">
+            <img src="{{ asset('photos-annonce/velo-route.jpg') }}" alt="Vélo de montagne" width="300" class="m-auto">
         </div>
         <div class="card-body pb-1">
-            <h6 class="card-title"><a href="Annonce.php?id=1">Vélo de montagne</a></h6>
+            <h6 class="card-title"><a href="{{ url('Annonce.php?id=1') }}">Vélo de montagne</a></h6> {{-- À adapter si vous avez une route Laravel pour Annonce.php --}}
             <div class="d-flex justify-content-between">
                 <div class="text-left">
                     <a href="mailto:exemple1@test.test">Jean Dupont</a>
@@ -345,6 +195,7 @@
     </div>
 </div>
 
+{{-- Annonce 2 --}}
 <div id="divAnnonce-2" class="m-3">
     <div class="card annonce">
         <div class="card-header d-flex justify-content-between py-1">
@@ -352,10 +203,10 @@
             <div class="text-right">Location</div>
         </div>
         <div class="overflow-hidden text-right imageSize">
-            <img alt="Image de l'annonce 2" src="photos-annonce/artisanat.jpg" width="300" class="m-auto">
+            <img alt="Image de l'annonce 2" src="{{ asset('photos-annonce/artisanat.jpg') }}" width="300" class="m-auto">
         </div>
         <div class="card-body pb-1">
-            <h6 class="card-title"><a href="Annonce.php?id=2">Appartement en centre-ville</a></h6>
+            <h6 class="card-title"><a href="{{ url('Annonce.php?id=2') }}">Appartement en centre-ville</a></h6>
             <div class="d-flex justify-content-between">
                 <div class="text-left">
                     <a href="mailto:exemple2@test.test">Marie Curie</a>
@@ -370,6 +221,7 @@
     </div>
 </div>
 
+{{-- Annonce 3 --}}
 <div id="divAnnonce-3" class="m-3">
     <div class="card annonce">
         <div class="card-header d-flex justify-content-between py-1">
@@ -377,10 +229,10 @@
             <div class="text-right">À donner</div>
         </div>
         <div class="overflow-hidden text-right imageSize">
-            <img alt="Image de l'annonce 3" src="C:\wamp64\www\Zara-projetfinal\Zara-projetfinal\photos-annonce\Sofa.jpg" width="300" class="m-auto">
+            <img alt="Image de l'annonce 3" src="{{ asset('photos-annonce/Sofa.jpg') }}" width="300" class="m-auto">
         </div>
         <div class="card-body pb-1">
-            <h6 class="card-title"><a href="Annonce.php?id=3">Canapé en bon état</a></h6>
+            <h6 class="card-title"><a href="{{ url('Annonce.php?id=3') }}">Canapé en bon état</a></h6>
             <div class="d-flex justify-content-between">
                 <div class="text-left">
                     <a href="mailto:exemple3@test.test">Sophie Martin</a>
@@ -395,6 +247,7 @@
     </div>
 </div>
 
+{{-- Annonce 4 --}}
 <div id="divAnnonce-4" class="m-3">
     <div class="card annonce">
         <div class="card-header d-flex justify-content-between py-1">
@@ -402,10 +255,10 @@
             <div class="text-right">Service offert</div>
         </div>
         <div class="overflow-hidden text-right imageSize">
-            <img alt="Image de l'annonce 4" src="photos-annonce/Consoles.jpg" width="300" class="m-auto">
+            <img alt="Image de l'annonce 4" src="{{ asset('photos-annonce/Consoles.jpg') }}" width="300" class="m-auto">
         </div>
         <div class="card-body pb-1">
-            <h6 class="card-title"><a href="Annonce.php?id=4">Cours de guitare</a></h6>
+            <h6 class="card-title"><a href="{{ url('Annonce.php?id=4') }}">Cours de guitare</a></h6>
             <div class="d-flex justify-content-between">
                 <div class="text-left">
                     <a href="mailto:exemple4@test.test">Pierre Lemoine</a>
@@ -420,6 +273,7 @@
     </div>
 </div>
 
+{{-- Annonce 5 --}}
 <div id="divAnnonce-5" class="m-3">
     <div class="card annonce">
         <div class="card-header d-flex justify-content-between py-1">
@@ -427,10 +281,10 @@
             <div class="text-right">À vendre</div>
         </div>
         <div class="overflow-hidden text-right imageSize">
-            <img alt="Image de l'annonce 5" src="photos-annonce/Ordinateur.jpg" width="300" class="m-auto">
+            <img alt="Image de l'annonce 5" src="{{ asset('photos-annonce/ordinateur-portable.jpg') }}" width="300" class="m-auto">
         </div>
         <div class="card-body pb-1">
-            <h6 class="card-title"><a href="Annonce.php?id=5">Ordinateur portable</a></h6>
+            <h6 class="card-title"><a href="{{ url('Annonce.php?id=5') }}">Ordinateur portable</a></h6>
             <div class="d-flex justify-content-between">
                 <div class="text-left">
                     <a href="mailto:exemple5@test.test">Claire Dubois</a>
@@ -445,6 +299,7 @@
     </div>
 </div>
 
+{{-- Annonce 6 --}}
 <div id="divAnnonce-6" class="m-3">
     <div class="card annonce">
         <div class="card-header d-flex justify-content-between py-1">
@@ -452,10 +307,10 @@
             <div class="text-right">Recherche</div>
         </div>
         <div class="overflow-hidden text-right imageSize">
-            <img alt="Image de l'annonce 6" src="photos-annonce/Tables.jpg" width="300" class="m-auto">
+            <img alt="Image de l'annonce 6" src="{{ asset('photos-annonce/Table de jardin.jpg') }}" width="300" class="m-auto">
         </div>
         <div class="card-body pb-1">
-            <h6 class="card-title"><a href="Annonce.php?id=6">Recherche table à manger</a></h6>
+            <h6 class="card-title"><a href="{{ url('Annonce.php?id=6') }}">Recherche table à manger</a></h6>
             <div class="d-flex justify-content-between">
                 <div class="text-left">
                     <a href="mailto:exemple6@test.test">Marc Tremblay</a>
@@ -470,6 +325,7 @@
     </div>
 </div>
 
+{{-- Annonce 7 --}}
 <div id="divAnnonce-7" class="m-3">
     <div class="card annonce">
         <div class="card-header d-flex justify-content-between py-1">
@@ -477,10 +333,10 @@
             <div class="text-right">À vendre</div>
         </div>
         <div class="overflow-hidden text-right imageSize">
-            <img alt="Image de l'annonce 7" src="photos-annonce/Tv.jpg" width="300" class="m-auto">
+            <img alt="Image de l'annonce 7" src="{{ asset('photos-annonce/Téléviseur à écran plat.jpg') }}" width="300" class="m-auto">
         </div>
         <div class="card-body pb-1">
-            <h6 class="card-title"><a href="Annonce.php?id=7">Télévision 4K</a></h6>
+            <h6 class="card-title"><a href="{{ url('Annonce.php?id=7') }}">Télévision 4K</a></h6>
             <div class="d-flex justify-content-between">
                 <div class="text-left">
                     <a href="mailto:exemple7@test.test">Julie Lambert</a>
@@ -495,6 +351,7 @@
     </div>
 </div>
 
+{{-- Annonce 8 --}}
 <div id="divAnnonce-8" class="m-3">
     <div class="card annonce">
         <div class="card-header d-flex justify-content-between py-1">
@@ -502,10 +359,10 @@
             <div class="text-right">À donner</div>
         </div>
         <div class="overflow-hidden text-right imageSize">
-            <img alt="Image de l'annonce 8" src="photos-annonce/Vetements.jpg" width="300" class="m-auto">
+            <img alt="Image de l'annonce 8" src="{{ asset('photos-annonce/Vetements.jpg') }}" width="300" class="m-auto">
         </div>
         <div class="card-body pb-1">
-            <h6 class="card-title"><a href="Annonce.php?id=8">Vêtements pour enfants</a></h6>
+            <h6 class="card-title"><a href="{{ url('Annonce.php?id=8') }}">Vêtements pour enfants</a></h6>
             <div class="d-flex justify-content-between">
                 <div class="text-left">
                     <a href="mailto:exemple8@test.test">Nathalie Roy</a>
@@ -520,6 +377,7 @@
     </div>
 </div>
 
+{{-- Annonce 9 --}}
 <div id="divAnnonce-9" class="m-3">
     <div class="card annonce">
         <div class="card-header d-flex justify-content-between py-1">
@@ -527,10 +385,10 @@
             <div class="text-right">Service offert</div>
         </div>
         <div class="overflow-hidden text-right imageSize">
-            <img alt="Image de l'annonce 9" src="photos-annonce/Cuisine.jpg" width="300" class="m-auto">
+            <img alt="Image de l'annonce 9" src="{{ asset('photos-annonce/robot culinaire.jpg') }}" width="300" class="m-auto">
         </div>
         <div class="card-body pb-1">
-            <h6 class="card-title"><a href="Annonce.php?id=9">Cours de cuisine</a></h6>
+            <h6 class="card-title"><a href="{{ url('Annonce.php?id=9') }}">Cours de cuisine</a></h6>
             <div class="d-flex justify-content-between">
                 <div class="text-left">
                     <a href="mailto:exemple9@test.test">Charles Gagnon</a>
@@ -545,6 +403,7 @@
     </div>
 </div>
 
+{{-- Annonce 10 --}}
 <div id="divAnnonce-10" class="m-3">
     <div class="card annonce">
         <div class="card-header d-flex justify-content-between py-1">
@@ -552,10 +411,10 @@
             <div class="text-right">À vendre</div>
         </div>
         <div class="overflow-hidden text-right imageSize">
-            <img alt="Image de l'annonce 10" src="photos-annonce/Livre.jpg" width="300" class="m-auto">
+            <img alt="Image de l'annonce 10" src="{{ asset('photos-annonce/Livres de collection.jpg') }}" width="300" class="m-auto">
         </div>
         <div class="card-body pb-1">
-            <h6 class="card-title"><a href="Annonce.php?id=10">Livres de collection</a></h6>
+            <h6 class="card-title"><a href="{{ url('Annonce.php?id=10') }}">Livres de collection</a></h6>
             <div class="d-flex justify-content-between">
                 <div class="text-left">
                     <a href="mailto:exemple10@test.test">Isabelle Tremblay</a>
@@ -568,8 +427,8 @@
             <div class="text-right font-italic">8</div>
         </div>
     </div>
-</div> 
-   
-Ceci est un commentaire HTML -->
+</div>
 
 </div>
+</body>
+</html>
