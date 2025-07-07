@@ -33,7 +33,7 @@ class CustomAuthController extends Controller
 
         if ($user && Hash::check($request->password, $user->password)) {
             Auth::loginUsingId($user->id);
-            // CORRECTION : Redirige vers la route nommée 'annonces.list'
+            // Redirige l'utilisateur vers la page des annonces après une connexion réussie
             return redirect()->intended(route('annonces.list'));
         }
 
@@ -82,7 +82,7 @@ class CustomAuthController extends Controller
 
         Auth::login($user);
 
-        // CORRECTION : Redirige vers la route nommée 'annonces.list'
+        // Redirige l'utilisateur vers la page des annonces après une inscription réussie
         return redirect()->route('annonces.list')->with('success', 'Votre compte a été créé avec succès et vous êtes connecté !');
     }
 
@@ -91,7 +91,8 @@ class CustomAuthController extends Controller
      */
     public function editProfile()
     {
-        return view('profile.edit');
+        // Correction : Utilise le nom de la vue correcte "MiseAJourProfil"
+        return view('MiseAJourProfil');
     }
 
     /**

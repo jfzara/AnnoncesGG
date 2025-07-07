@@ -2,21 +2,20 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\CustomAuthController;
+use Illuminate\Support\Facades\Auth; // N'oubliez pas d'importer Auth si ce n'est pas déjà fait
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
 */
 
-// Route d'accueil publique (accessible à tous)
+// Route d'accueil publique : redirige vers les annonces si connecté, sinon affiche la page de bienvenue
 Route::get('/', function () {
-    return view('welcome'); // Vue de la page d'accueil par défaut de Laravel
+    if (Auth::check()) {
+        return redirect()->route('annonces.list');
+    }
+    return view('welcome');
 })->name('home');
 
 // Routes d'authentification (connexion et déconnexion)
@@ -28,17 +27,26 @@ Route::post('/logout', [CustomAuthController::class, 'logout'])->name('logout');
 Route::get('/register', [CustomAuthController::class, 'register'])->name('register');
 Route::post('/register', [CustomAuthController::class, 'registerPost'])->name('register.post');
 
-// Routes protégées par l'authentification (nécessitent d'être connecté)
+// Routes protégées par l'authentification
 Route::middleware('auth')->group(function () {
-    // CORRECTION : Nouvelle route pour la page des annonces (votre page d'accueil après connexion)
-    // Cette route appelle la vue 'ListeAnnonces'
+    // La vraie page d'accueil après connexion : Liste des Annonces
     Route::get('/annonces', function () {
         return view('ListeAnnonces');
-    })->name('annonces.list'); // Nommez cette route 'annonces.list' pour la cohérence
+    })->name('annonces.list');
 
-    // Routes pour le profil utilisateur
-    Route::get('/profile/edit', [CustomAuthController::class, 'editProfile'])->name('profile.edit');
+    // Route pour la gestion des annonces de l'utilisateur
+    Route::get('/gestion-annonces', function () {
+        return view('GestionAnnonces'); // Charger la vue GestionAnnonces.blade.php
+    })->name('gestion-annonces');
+
+    // Route pour la modification du profil utilisateur
+    // Cette route utilise votre vue MiseAJourProfil.blade.php
+    Route::get('/mise-a-jour-profil', [CustomAuthController::class, 'editProfile'])->name('profile.edit');
+    // Assurez-vous que la méthode editProfile dans CustomAuthController retourne bien view('MiseAJourProfil')
     Route::put('/profile', [CustomAuthController::class, 'updateProfile'])->name('profile.update');
 
     // Ajoutez ici d'autres routes qui nécessitent une authentification
+    // Exemple pour Annonce.php:
+    // Route::get('/annonce/{id}', [AnnonceController::class, 'show'])->name('annonce.show');
+    // Vous auriez besoin d'un AnnonceController et d'une vue Annonce.blade.php pour cela.
 });
