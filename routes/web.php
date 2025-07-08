@@ -4,13 +4,17 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\CustomAuthController;
 use App\Http\Controllers\AnnonceController;
 use App\Http\Controllers\CategorieController;
-use App\Http\Controllers\TestAnnonceCreateController; // <-- C'EST ICI
 use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make something great!
+|
 */
 
 // Route d'accueil publique : redirige vers les annonces si connecté, sinon affiche la page de bienvenue
@@ -31,8 +35,19 @@ Route::get('/register', [CustomAuthController::class, 'register'])->name('regist
 Route::post('/register', [CustomAuthController::class, 'registerPost'])->name('register.post');
 
 // Routes publiques pour les Annonces
+// !!! IMPORTANT : Placez les routes spécifiques avant les routes génériques avec paramètres.
+// annonces.create est plus spécifique que annonces.show
 Route::get('/annonces', [AnnonceController::class, 'index'])->name('annonces.index');
+
+// Route explicite pour la création d'une annonce (doit être AVANT {annonce})
+Route::get('/annonces/create', [AnnonceController::class, 'create'])->name('annonces.create');
+
+// Route explicite pour le stockage d'une nouvelle annonce
+Route::post('/annonces', [AnnonceController::class, 'store'])->name('annonces.store');
+
+// Route pour afficher une annonce spécifique (paramètre {annonce})
 Route::get('/annonces/{annonce}', [AnnonceController::class, 'show'])->name('annonces.show');
+
 
 // Routes protégées par l'authentification
 Route::middleware('auth')->group(function () {
@@ -40,11 +55,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/gestion-annonces', [AnnonceController::class, 'gestionAnnonces'])->name('annonces.gestion');
 
     // Routes CRUD pour les annonces
-    // Attention : la route 'annonces.create' est déjà définie implicitement ici
-    // par Route::resource('annonces', AnnonceController::class)
-    // qui gère aussi la méthode create du contrôleur AnnonceController.
-    // Assurez-vous que cette route de test ne crée pas de conflit si vous réactivez l'AnnonceController.
-    Route::resource('annonces', AnnonceController::class)->except(['index', 'show']);
+    // Pour ce test, nous laissons Route::resource définir TOUTES les routes.
+    // L'ordre devrait faire que les routes explicites ci-dessus soient prises en compte en premier.
+    Route::resource('annonces', AnnonceController::class); // <-- Plus d'except() ici
 
     // Routes pour la modification du profil utilisateur (si vous les avez)
     Route::get('/mise-a-jour-profil', [CustomAuthController::class, 'editProfile'])->name('profile.edit');
@@ -52,10 +65,5 @@ Route::middleware('auth')->group(function () {
 
     // Routes pour la gestion des catégories
     Route::resource('categories', CategorieController::class);
-
-    // Ajoutez ici d'autres routes qui nécessitent une authentification
-
-    // Nouvelle route de test pour la création d'annonce (CORRECTEMENT PLACÉE DANS LE GROUPE "auth")
-    Route::get('/test-annonces-create', [TestAnnonceCreateController::class, 'create'])->name('test.annonces.create');
 
 });

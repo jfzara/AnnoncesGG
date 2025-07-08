@@ -102,8 +102,11 @@ class AnnonceController extends Controller
      */
     public function create()
     {
-        // Tout le reste est commenté ou supprimé temporairement
-        dd("DEBUG: Méthode create() atteinte et exécutée !");
+        // Récupérer toutes les catégories pour les passer au formulaire
+        $categories = Categorie::all(); // Assurez-vous que 'use App\Models\Categorie;' est en haut du fichier
+
+        // Retourner la vue avec les catégories
+        return view('annonces.create', compact('categories'));
     }
 
     /**
@@ -275,7 +278,7 @@ class AnnonceController extends Controller
      * Affiche la liste des annonces de l'utilisateur connecté.
      * Requiert une authentification.
      */
-    public function gestionannonces()
+    public function gestionAnnonces()
     {
         $userannonces = Auth::user()->annonces()->latest()->get(); // Récupère les annonces de l'utilisateur
         return view('annonces.gestion', compact('userannonces'));
