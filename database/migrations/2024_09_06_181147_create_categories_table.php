@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id('NoCategorie'); // Clé primaire avec nom spécifique
-            $table->string('Description', 20); // Description de la catégorie
-            
+            $table->string('Description', 255); // Description de la catégorie
+
             $table->timestamps(); // Timestamps pour les créations et mises à jour
         });
     }
