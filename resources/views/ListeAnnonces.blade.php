@@ -41,7 +41,15 @@
                 <option value="15" {{ request('NbParPage') == 15 ? 'selected' : '' }}>15</option>
                 <option value="20" {{ request('NbParPage') == 20 ? 'selected' : '' }}>20</option>
             </select>
-            <h5 class="text-secondary font-italic ms-3 mb-0">{{ $annonces->total() }} annonces trouvées.</h5> {{-- Utilisez total() pour la pagination --}}
+           <h5 class="text-secondary font-italic ms-3 mb-0">
+    @if ($annonces->total() === 0)
+        Aucune annonce trouvée.
+    @elseif ($annonces->total() === 1)
+        1 annonce trouvée.
+    @else
+        {{ $annonces->total() }} annonces trouvées.
+    @endif
+</h5>
         </div>
         <div id="divRecherche" class="flex-fill d-flex justify-content-end">
             <form id="frmRecherche" class="d-flex flex-column" method="GET" action="{{ route('annonces.index') }}">
