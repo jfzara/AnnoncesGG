@@ -41,15 +41,15 @@
                 <option value="15" {{ request('NbParPage') == 15 ? 'selected' : '' }}>15</option>
                 <option value="20" {{ request('NbParPage') == 20 ? 'selected' : '' }}>20</option>
             </select>
-           <h5 class="text-secondary font-italic ms-3 mb-0">
-    @if ($annonces->total() === 0)
-        Aucune annonce trouvée.
-    @elseif ($annonces->total() === 1)
-        1 annonce trouvée.
-    @else
-        {{ $annonces->total() }} annonces trouvées.
-    @endif
-</h5>
+            <h5 class="text-secondary font-italic ms-3 mb-0">
+                @if ($annonces->total() === 0)
+                    Aucune annonce trouvée.
+                @elseif ($annonces->total() === 1)
+                    1 annonce trouvée.
+                @else
+                    {{ $annonces->total() }} annonces trouvées.
+                @endif
+            </h5>
         </div>
         <div id="divRecherche" class="flex-fill d-flex justify-content-end">
             <form id="frmRecherche" class="d-flex flex-column" method="GET" action="{{ route('annonces.index') }}">
@@ -157,6 +157,26 @@
                         <div class="card-footer d-flex justify-content-between align-items-center py-0">
                             <div class="text-left" style="font-size: 0.75em;">{{ \Carbon\Carbon::parse($annonce->Parution)->format('Y-m-d H:i') }}</div>
                             <div class="text-right d-flex">
+                                {{-- Bouton de contact --}}
+                                @auth
+                                    @if (Auth::id() !== $annonce->NoUtilisateur)
+                                        <a href="{{ route('annonces.contact.create', $annonce->NoAnnonce) }}" class="btn btn-primary btn-sm ms-1" title="Contacter l'auteur">
+                                            <i class="fas fa-envelope"></i>
+                                        </a>
+                                    @else
+                                        {{-- Si c'est l'annonce de l'utilisateur, on peut mettre un bouton "Votre annonce" désactivé ou rien --}}
+                                        <button class="btn btn-info btn-sm ms-1" disabled title="Ceci est votre annonce">
+                                            <i class="fas fa-user"></i>
+                                        </button>
+                                    @endif
+                                @else
+                                    {{-- Pour les visiteurs non connectés --}}
+                                    <button class="btn btn-primary btn-sm ms-1" disabled title="Connectez-vous pour contacter">
+                                        <i class="fas fa-envelope"></i>
+                                    </button>
+                                @endauth
+
+                                {{-- Boutons Modifier/Supprimer existants (si l'utilisateur est l'auteur) --}}
                                 @auth
                                     @if (Auth::id() === $annonce->NoUtilisateur)
                                         <a href="{{ route('annonces.edit', $annonce->NoAnnonce) }}" class="btn btn-warning btn-sm ms-1" title="Modifier"><i class="fas fa-edit"></i></a>

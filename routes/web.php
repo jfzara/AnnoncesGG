@@ -65,5 +65,10 @@ Route::middleware('auth')->group(function () {
 
     // Routes pour la gestion des catégories
     Route::resource('categories', CategorieController::class);
+    // Route pour afficher le formulaire de contact sur la page de détail d'une annonce
+Route::get('/annonces/{annonce}/contact', [App\Http\Controllers\ContactController::class, 'create'])->name('annonces.contact.create');
+
+// Route pour traiter l'envoi du formulaire de contact
+Route::post('/annonces/{annonce}/contact', [App\Http\Controllers\ContactController::class, 'send'])->name('annonces.contact.send');
 
 });
