@@ -34,7 +34,7 @@ class CustomAuthController extends Controller
         if ($user && Hash::check($request->password, $user->password)) {
             Auth::loginUsingId($user->id);
             // Redirige l'utilisateur vers la page des annonces après une connexion réussie
-            return redirect()->intended(route('annonces.list'));
+            return redirect()->intended(route('annonces.index'));
         }
 
         return back()->withErrors([
@@ -83,7 +83,7 @@ class CustomAuthController extends Controller
         Auth::login($user);
 
         // Redirige l'utilisateur vers la page des annonces après une inscription réussie
-        return redirect()->route('annonces.list')->with('success', 'Votre compte a été créé avec succès et vous êtes connecté !');
+        return redirect()->route('annonces.index')->with('success', 'Votre compte a été créé avec succès et vous êtes connecté !');
     }
 
     /**

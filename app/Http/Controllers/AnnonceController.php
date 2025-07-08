@@ -102,9 +102,8 @@ class AnnonceController extends Controller
      */
     public function create()
     {
-        // Récupérer toutes les catégories pour le formulaire de sélection
-        $categories = Categorie::all();
-        return view('Annonces.create', compact('categories'));
+        // Tout le reste est commenté ou supprimé temporairement
+        dd("DEBUG: Méthode create() atteinte et exécutée !");
     }
 
     /**
@@ -113,12 +112,33 @@ class AnnonceController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'DescriptionAbregee' => 'required|string|max:255',
-            'DescriptionComplete' => 'nullable|string',
-            'Prix' => 'nullable|numeric|min:0',
+        // Règle de validation avec messages personnalisés
+        $validatedData = $request->validate([
+            'DescriptionAbregee' => 'required|string|min:3|max:100', // Ajout de min pour un titre un minimum descriptif, max 100 pour coller à la DB
+            'DescriptionComplete' => 'nullable|string|max:5000', // Utilisez un grand max, car TEXT n'a pas de limite pratique
+            'Prix' => 'nullable|numeric|min:0.01|max:9999999.99', // Min 0.01 pour éviter les prix nuls si un prix est entré, max adapté à DECIMAL(10,2)
             'Categorie' => 'required|exists:categories,NoCategorie', // Assurez-vous que la catégorie existe
-            'Photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'Photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Image, formats, taille max 2MB
+        ], [
+            // Messages personnalisés pour une meilleure UX
+            'DescriptionAbregee.required' => 'Le titre de votre annonce est obligatoire.',
+            'DescriptionAbregee.string' => 'Le titre doit être une chaîne de caractères.',
+            'DescriptionAbregee.min' => 'Le titre doit comporter au moins :min caractères.',
+            'DescriptionAbregee.max' => 'Le titre ne peut pas dépasser :max caractères.',
+
+            'DescriptionComplete.string' => 'La description complète doit être une chaîne de caractères.',
+            'DescriptionComplete.max' => 'La description complète ne peut pas dépasser :max caractères.',
+
+            'Prix.numeric' => 'Le prix doit être un nombre valide (ex: 12.99).',
+            'Prix.min' => 'Le prix doit être supérieur à zéro si spécifié.',
+            'Prix.max' => 'Le prix ne peut pas dépasser :max$.',
+
+            'Categorie.required' => 'Veuillez sélectionner une catégorie pour votre annonce.',
+            'Categorie.exists' => 'La catégorie sélectionnée n\'est pas valide.',
+
+            'Photo.image' => 'Le fichier doit être une image (ex: JPG, PNG).',
+            'Photo.mimes' => 'Les formats d\'image acceptés sont JPEG, PNG, JPG, GIF et SVG.',
+            'Photo.max' => 'La taille de l\'image ne doit pas dépasser 2 Mo.',
         ]);
 
         $annonceData = $request->all();
@@ -127,6 +147,9 @@ class AnnonceController extends Controller
         if ($request->hasFile('Photo')) {
             $path = $request->file('Photo')->store('photos-annonce', 'public');
             $annonceData['Photo'] = $path;
+        } else {
+            // Si aucune photo n'est fournie et qu'elle est nullable, assurez-vous que la colonne est null
+            $annonceData['Photo'] = null;
         }
 
         // Définir l'état par défaut (par exemple, 1 pour actif)
@@ -135,7 +158,7 @@ class AnnonceController extends Controller
 
         Annonce::create($annonceData);
 
-        return redirect()->route('annonces.list')->with('success', 'Annonce créée avec succès !');
+        return redirect()->route('annonces.index')->with('success', 'Félicitations ! Votre annonce a été créée avec succès et est maintenant en ligne.');
     }
 
     /**
@@ -144,7 +167,7 @@ class AnnonceController extends Controller
      */
     public function show(Annonce $annonce) // Utilisation de l'injection de modèle Laravel
     {
-        return view('Annonces.show', compact('annonce'));
+        return view('annonces.show', compact('annonce'));
     }
 
     /**
@@ -159,7 +182,7 @@ class AnnonceController extends Controller
         }
 
         $categories = Categorie::all(); // Pour le formulaire d'édition
-        return view('Annonces.edit', compact('annonce', 'categories'));
+        return view('annonces.edit', compact('annonce', 'categories'));
     }
 
     /**
@@ -174,11 +197,31 @@ class AnnonceController extends Controller
         }
 
         $request->validate([
-            'DescriptionAbregee' => 'required|string|max:255',
-            'DescriptionComplete' => 'nullable|string',
-            'Prix' => 'nullable|numeric|min:0',
+            'DescriptionAbregee' => 'required|string|min:3|max:100',
+            'DescriptionComplete' => 'nullable|string|max:5000',
+            'Prix' => 'nullable|numeric|min:0.01|max:9999999.99',
             'Categorie' => 'required|exists:categories,NoCategorie',
             'Photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ], [
+            // Messages personnalisés pour une meilleure UX
+            'DescriptionAbregee.required' => 'Le titre de votre annonce est obligatoire.',
+            'DescriptionAbregee.string' => 'Le titre doit être une chaîne de caractères.',
+            'DescriptionAbregee.min' => 'Le titre doit comporter au moins :min caractères.',
+            'DescriptionAbregee.max' => 'Le titre ne peut pas dépasser :max caractères.',
+
+            'DescriptionComplete.string' => 'La description complète doit être une chaîne de caractères.',
+            'DescriptionComplete.max' => 'La description complète ne peut pas dépasser :max caractères.',
+
+            'Prix.numeric' => 'Le prix doit être un nombre valide (ex: 12.99).',
+            'Prix.min' => 'Le prix doit être supérieur à zéro si spécifié.',
+            'Prix.max' => 'Le prix ne peut pas dépasser :max$.',
+
+            'Categorie.required' => 'Veuillez sélectionner une catégorie pour votre annonce.',
+            'Categorie.exists' => 'La catégorie sélectionnée n\'est pas valide.',
+
+            'Photo.image' => 'Le fichier doit être une image (ex: JPG, PNG).',
+            'Photo.mimes' => 'Les formats d\'image acceptés sont JPEG, PNG, JPG, GIF et SVG.',
+            'Photo.max' => 'La taille de l\'image ne doit pas dépasser 2 Mo.',
         ]);
 
         $annonceData = $request->all();
@@ -195,12 +238,16 @@ class AnnonceController extends Controller
                 Storage::disk('public')->delete($annonce->Photo);
             }
             $annonceData['Photo'] = null;
+        } else {
+            // Si aucune nouvelle photo n'est uploadée et pas de demande de suppression,
+            // on garde l'ancienne photo. Ne pas modifier $annonceData['Photo']
+            // si elle n'est pas dans le request.
+            unset($annonceData['Photo']); // S'assurer que le champ n'est pas écrasé par null si non fourni
         }
-
 
         $annonce->update($annonceData);
 
-        return redirect()->route('annonces.list')->with('success', 'Annonce mise à jour avec succès !');
+        return redirect()->route('annonces.index')->with('success', 'Annonce mise à jour avec succès !');
     }
 
     /**
@@ -221,16 +268,16 @@ class AnnonceController extends Controller
 
         $annonce->delete();
 
-        return redirect()->route('annonces.list')->with('success', 'Annonce supprimée avec succès !');
+        return redirect()->route('annonces.index')->with('success', 'Annonce supprimée avec succès !');
     }
 
     /**
      * Affiche la liste des annonces de l'utilisateur connecté.
      * Requiert une authentification.
      */
-    public function gestionAnnonces()
+    public function gestionannonces()
     {
-        $userAnnonces = Auth::user()->annonces()->latest()->get(); // Récupère les annonces de l'utilisateur
-        return view('Annonces.gestion', compact('userAnnonces'));
+        $userannonces = Auth::user()->annonces()->latest()->get(); // Récupère les annonces de l'utilisateur
+        return view('annonces.gestion', compact('userannonces'));
     }
 }

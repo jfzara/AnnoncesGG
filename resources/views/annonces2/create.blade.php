@@ -103,7 +103,7 @@
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                             <button type="submit" class="btn btn-success me-md-2"><i class="fas fa-plus-circle"></i> Créer l'annonce</button>
-                            <a href="{{ route('annonces.index') }}" class="btn btn-secondary"><i class="fas fa-times-circle"></i> Annuler</a>
+                            <a href="{{ route('annonces.list') }}" class="btn btn-secondary"><i class="fas fa-times-circle"></i> Annuler</a>
                         </div>
                     </form>
                 </div>
