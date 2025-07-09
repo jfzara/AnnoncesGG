@@ -12,28 +12,45 @@
                 </div>
                 <div class="card-body">
                     {{-- Le bloc d'affichage des erreurs globales ($errors->any()) est supprimé ici
-                         car les erreurs sont maintenant affichées en ligne sous chaque champ.
-                         Les messages de succès/erreur de session seront gérés par des toasts. --}}
+                        car les erreurs sont maintenant affichées en ligne sous chaque champ.
+                        Les messages de succès/erreur de session seront gérés par des toasts. --}}
 
                     <form action="{{ route('annonces.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
+                        {{-- Champ: Titre --}}
+                        {{-- Ajouté pour correspondre à la nouvelle colonne 'Titre' dans la DB --}}
+                        <div class="mb-3">
+                            <label for="Titre" class="form-label">Titre de l'annonce <span class="text-danger">*</span></label>
+                            <input type="text"
+                                   class="form-control @error('Titre') is-invalid @enderror"
+                                   id="Titre"
+                                   name="Titre"
+                                   value="{{ old('Titre') }}"
+                                   placeholder="Ex: Vélo de montagne à vendre"
+                                   required
+                                   maxlength="255">
+                            @error('Titre')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="form-text text-muted">Le titre principal de votre annonce.</small>
+                        </div>
+
                         {{-- Champ: Description Abrégée --}}
                         <div class="mb-3">
-                            <label for="DescriptionAbregee" class="form-label">Titre / Description Abrégée <span class="text-danger">*</span></label>
+                            <label for="DescriptionAbregee" class="form-label">Description Abrégée <span class="text-danger">*</span></label>
                             <input type="text"
                                    class="form-control @error('DescriptionAbregee') is-invalid @enderror"
                                    id="DescriptionAbregee"
                                    name="DescriptionAbregee"
                                    value="{{ old('DescriptionAbregee') }}"
-                                   placeholder="Ex: Vélo de montagne à vendre"
+                                   placeholder="Ex: Excellent VTT, très peu utilisé."
                                    required
-                                   autofocus
-                                   maxlength="100"> {{-- Mise à jour de la longueur max pour coller aux règles de validation --}}
+                                   maxlength="100">
                             @error('DescriptionAbregee')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <small class="form-text text-muted">Un titre concis et percutant pour votre annonce (3 à 100 caractères).</small>
+                            <small class="form-text text-muted">Un résumé concis pour votre annonce (max 100 caractères).</small>
                         </div>
 
                         {{-- Champ: Description Complète --}}
@@ -67,6 +84,21 @@
                             <small class="form-text text-muted">Laissez vide si l'article est gratuit ou à discuter. Format: 123 ou 123.45.</small>
                         </div>
 
+                        {{-- Champ: Date d'expiration --}}
+                        <div class="mb-3">
+                            <label for="DateFin" class="form-label">Date d'expiration de l'annonce (optionnel) :</label>
+                            <input type="date"
+                                   class="form-control @error('DateFin') is-invalid @enderror"
+                                   id="DateFin"
+                                   name="DateFin"
+                                   value="{{ old('DateFin') }}"> @error('DateFin')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                            <small class="form-text text-muted">La date après laquelle l'annonce ne sera plus visible. Laissez vide pour aucune date d'expiration.</small>
+                        </div>
+
                         {{-- Champ: Catégorie --}}
                         <div class="mb-3">
                             <label for="Categorie" class="form-label">Catégorie <span class="text-danger">*</span></label>
@@ -87,15 +119,15 @@
                             <small class="form-text text-muted">Choisissez la catégorie qui décrit le mieux votre annonce.</small>
                         </div>
 
-                        {{-- Champ: Photo --}}
+                        {{-- Champ: Photo (nommé photo_annonce dans le contrôleur) --}}
                         <div class="mb-3">
-                            <label for="Photo" class="form-label">Ajouter une Photo (Optionnel)</label>
+                            <label for="photo_annonce" class="form-label">Ajouter une Photo (Optionnel)</label>
                             <input type="file"
-                                   class="form-control @error('Photo') is-invalid @enderror"
-                                   id="Photo"
-                                   name="Photo"
+                                   class="form-control @error('photo_annonce') is-invalid @enderror" {{-- Notez le 'photo_annonce' --}}
+                                   id="photo_annonce" {{-- Notez le 'photo_annonce' --}}
+                                   name="photo_annonce" {{-- C'est le 'name' que le contrôleur attend --}}
                                    accept="image/*">
-                            @error('Photo')
+                            @error('photo_annonce') {{-- Notez le 'photo_annonce' --}}
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                             <small class="form-text text-muted">Formats acceptés : JPG, PNG, GIF, SVG. Taille maximale : 2 Mo.</small>

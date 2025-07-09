@@ -40,7 +40,19 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-
+<div class="mb-3">
+    <label for="DateFin" class="form-label">Date d'expiration de l'annonce (optionnel) :</label>
+    <input type="date"
+           class="form-control @error('DateFin') is-invalid @enderror"
+           id="DateFin"
+           name="DateFin"
+           value="{{ old('DateFin', $annonce->DateFin ? $annonce->DateFin->format('Y-m-d') : '') }}">
+    @error('DateFin')
+        <div class="invalid-feedback">
+            {{ $message }}
+        </div>
+    @enderror
+</div>
                         {{-- Champ Catégorie --}}
                         <div class="mb-3">
                             <label for="Categorie" class="form-label">Catégorie</label>

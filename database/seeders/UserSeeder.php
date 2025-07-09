@@ -13,17 +13,26 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        User::create([
-            'name' => 'jfzara',
-            'email' => 'jfzara@gmail.com',
-            'password' => Hash::make('password'), // Laravel va hacher 'password' pour vous
-        ]);
+        // Création du premier utilisateur 'jfzara' s'il n'existe pas déjà
+        User::firstOrCreate(
+            ['email' => 'jfzara@gmail.com'], // Critère de recherche : l'email
+            [
+                'name' => 'jfzara',
+                'password' => Hash::make('password'), // Hash le mot de passe 'password'
+                'email_verified_at' => now(), // Simule une adresse email vérifiée
+            ]
+        );
 
-        // Vous pouvez ajouter d'autres utilisateurs ici si vous le souhaitez
-        // User::create([
-        //     'name' => 'Autre Utilisateur',
-        //     'email' => 'autre@example.com',
-        //     'password' => Hash::make('secret'),
-        // ]);
+        // Création des 5 utilisateurs jfzara1 à jfzara5
+        for ($i = 1; $i <= 5; $i++) {
+            User::firstOrCreate(
+                ['email' => 'jfzara' . $i . '@gmail.com'], // Critère de recherche : l'email
+                [
+                    'name' => 'jfzara' . $i,
+                    'password' => Hash::make('password'), // Hash le mot de passe 'password'
+                    'email_verified_at' => now(), // Simule une adresse email vérifiée
+                ]
+            );
+        }
     }
 }

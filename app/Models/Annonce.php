@@ -14,28 +14,35 @@ class Annonce extends Model
     public $incrementing = true;            // C'est un auto-incrément
     protected $keyType = 'int';             // Le type de la clé primaire
 
-    // Définir les attributs qui peuvent être massivement assignés
+    // Définir les attributs qui peuvent être massivement assignés.
+    // CES NOMS CORRESPONDENT EXACTEMENT À VOS COLONNES DE DB.
     protected $fillable = [
-        'NoUtilisateur',         // Clé étrangère vers l'utilisateur
-        'Parution',
-        'Categorie',             // Clé étrangère vers la catégorie
-        'DescriptionAbregee',
-        'DescriptionComplete',
-        'Prix',
-        'Photo',
-        'MiseAJour',
-        'Etat',
-        'created_at',            // Ajout explicite même si par défaut
-        'updated_at',            // Ajout explicite même si par défaut
+        'NoUtilisateur',        // Clé étrangère vers l'utilisateur
+        'Parution',             // Colonne `Parution`
+        'Categorie',            // Colonne `Categorie`
+        'Titre',                // <<< AJOUTÉ : Colonne `Titre` (c'était la colonne manquante)
+        'DescriptionAbregee',   // Colonne `DescriptionAbregee`
+        'DescriptionComplete',  // Colonne `DescriptionComplete`
+        'Prix',                 // Colonne `Prix`
+        'Photo',                // Colonne `Photo` (pour l'image)
+        'MiseAJour',            // Colonne `MiseAJour`
+        'Etat',                 // Colonne `Etat`
+        'DateFin',              // Colonne `DateFin`
+    ];
+
+    // Indiquer à Eloquent de traiter ces colonnes comme des instances Carbon (dates)
+    protected $casts = [
+        'Parution' => 'datetime',
+        'MiseAJour' => 'datetime',
+        'DateFin' => 'datetime', // Assurez-vous que DateFin est casté en datetime
     ];
 
     /**
-     * Une annonce appartient à un utilisateur (votre relation existante).
+     * Une annonce appartient à un utilisateur.
      */
-    public function user() // Le nom de la fonction est 'user' pour Laravel
+    public function user()
     {
-        // On précise que la clé étrangère sur la table 'annonces' est 'NoUtilisateur'
-        // et que la clé locale sur la table 'users' est 'id' (clé primaire du modèle User).
+        // L'annonce a une clé étrangère 'NoUtilisateur' qui référence la clé primaire 'id' de la table 'users'.
         return $this->belongsTo(User::class, 'NoUtilisateur', 'id');
     }
 
@@ -44,8 +51,20 @@ class Annonce extends Model
      */
     public function categorie()
     {
-        // Spécifiez la clé étrangère 'Categorie' sur 'annonces'
-        // et la clé locale 'NoCategorie' sur la table 'categories'.
+        // La clé étrangère sur la table 'annonces' est 'Categorie',
+        // et la clé locale sur la table 'categories' est 'NoCategorie'.
         return $this->belongsTo(Categorie::class, 'Categorie', 'NoCategorie');
+    }
+
+    // Si vous souhaitez une méthode pour obtenir la description complète ou abrégée
+    public function getDescriptionAttribute()
+    {
+        return $this->DescriptionComplete; // Ou DescriptionAbregee selon ce que vous utilisez le plus souvent
+    }
+
+    // Si vous souhaitez une méthode pour obtenir l'URL de l'image
+    public function getImageUrlAttribute()
+    {
+        return $this->Photo; // Utilise la colonne 'Photo'
     }
 }
