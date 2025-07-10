@@ -12,20 +12,47 @@ use Illuminate\Validation\Rule;
 class AnnonceController extends Controller
 {
     /**
-     * Affiche une liste de toutes les annonces.
+     * Affiche une liste de toutes les annonces avec des options de recherche/filtre.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Modifié pour n'afficher que les annonces qui ne sont pas expirées
-        $annonces = Annonce::with(['user', 'categorie'])
-                            ->where(function ($query) {
-                                $query->whereNull('DateFin') // Annonces sans date de fin
-                                      ->orWhere('DateFin', '>=', now()); // Ou annonces dont la date de fin est dans le futur
-                            })
-                            ->orderByDesc('Parution')
-                            ->paginate(10);
+        // Récupérer les termes de recherche et de filtre de la requête
+        $search = $request->query('search');
+        $category = $request->query('category');
+        // $sort = $request->query('sort'); // Pour le tri, si on l'ajoute plus tard
 
-        return view('annonces.index', compact('annonces'));
+        // Commencer la requête de base pour les annonces non expirées
+        $annoncesQuery = Annonce::with(['user', 'categorie'])
+                                ->where(function ($query) {
+                                    $query->whereNull('DateFin')
+                                          ->orWhere('DateFin', '>=', now());
+                                });
+
+        // Appliquer le filtre de recherche par titre/description
+        if ($search) {
+            $annoncesQuery->where(function($query) use ($search) {
+                $query->where('Titre', 'like', '%' . $search . '%')
+                      ->orWhere('DescriptionAbregee', 'like', '%' . $search . '%')
+                      ->orWhere('DescriptionComplete', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Appliquer le filtre par catégorie
+        if ($category && $category !== 'all') {
+            $annoncesQuery->where('Categorie', $category);
+        }
+
+        // Appliquer le tri par défaut (les plus récentes en premier)
+        $annoncesQuery->orderByDesc('Parution');
+
+        // Obtenir les annonces paginées
+        $annonces = $annoncesQuery->paginate(10)->withQueryString(); // withQueryString() pour conserver les paramètres de filtre lors de la pagination
+
+        // Charger toutes les catégories pour le filtre déroulant
+        $categories = Categorie::all();
+
+        // Passer les annonces, les catégories, et les paramètres de recherche/filtre à la vue
+        return view('annonces.index', compact('annonces', 'categories', 'search', 'category'));
     }
 
     /**
@@ -50,14 +77,14 @@ class AnnonceController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([ // Utilisation de $validatedData pour récupérer les champs validés
+        $validatedData = $request->validate([
             'Titre' => 'required|string|max:255',
             'DescriptionAbregee' => 'required|string|max:100',
             'DescriptionComplete' => 'required|string',
-            'Prix' => 'required|numeric|min:0',
-            'Categorie' => ['required', Rule::exists('categories', 'NoCategorie')], // Utilise Rule pour une validation plus robuste
-            'photo_annonce' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Nom de l'input du formulaire
-            'DateFin' => 'nullable|date|after_or_equal:today', // Nouvelle règle de validation
+            'Prix' => 'nullable|numeric|min:0', // Rendre le prix nullable pour les champs optionnels
+            'Categorie' => ['required', Rule::exists('categories', 'NoCategorie')],
+            'photo_annonce' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'DateFin' => 'nullable|date|after_or_equal:today',
         ]);
 
         $imagePath = null;
@@ -65,7 +92,6 @@ class AnnonceController extends Controller
             $imagePath = $request->file('photo_annonce')->store('annonces_photos', 'public');
         }
 
-        // Utilisation de $validatedData pour la création, en ajoutant les champs non validés directement
         Annonce::create([
             'NoUtilisateur' => Auth::id(),
             'Parution' => now(),
@@ -76,8 +102,8 @@ class AnnonceController extends Controller
             'Prix' => $validatedData['Prix'],
             'Photo' => $imagePath,
             'MiseAJour' => now(),
-            'Etat' => 1, // Par exemple, 1 pour 'active'
-            'DateFin' => $validatedData['DateFin'] ?? null, // Assignation de la date de fin
+            'Etat' => 1,
+            'DateFin' => $validatedData['DateFin'] ?? null,
         ]);
 
         return redirect()->route('annonces.index')->with('success', 'Annonce créée avec succès !');
@@ -114,20 +140,19 @@ class AnnonceController extends Controller
             return redirect()->route('annonces.index')->with('error', 'Vous n\'êtes pas autorisé à modifier cette annonce.');
         }
 
-        $validatedData = $request->validate([ // Utilisation de $validatedData pour récupérer les champs validés
+        $validatedData = $request->validate([
             'Titre' => 'required|string|max:255',
             'DescriptionAbregee' => 'required|string|max:100',
             'DescriptionComplete' => 'required|string',
-            'Prix' => 'required|numeric|min:0',
+            'Prix' => 'nullable|numeric|min:0', // Rendre le prix nullable
             'Categorie' => ['required', Rule::exists('categories', 'NoCategorie')],
             'photo_annonce' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'DateFin' => 'nullable|date|after_or_equal:today',
-            'delete_current_image' => 'boolean', // Permet de gérer la suppression explicite de l'image
+            'delete_current_image' => 'boolean',
         ]);
 
-        $imagePath = $annonce->Photo; // Garde l'ancienne image par défaut
+        $imagePath = $annonce->Photo;
         if ($request->hasFile('photo_annonce')) {
-            // Supprime l'ancienne image si elle existe
             if ($annonce->Photo) {
                 Storage::disk('public')->delete($annonce->Photo);
             }
@@ -139,7 +164,6 @@ class AnnonceController extends Controller
             }
         }
 
-        // Utilisation de $validatedData pour la mise à jour, en ajoutant les champs spécifiques
         $annonce->update([
             'Titre' => $validatedData['Titre'],
             'DescriptionAbregee' => $validatedData['DescriptionAbregee'],
@@ -147,9 +171,9 @@ class AnnonceController extends Controller
             'Prix' => $validatedData['Prix'],
             'Categorie' => $validatedData['Categorie'],
             'Photo' => $imagePath,
-            'MiseAJour' => now(), // Met à jour la date de mise à jour
-            'Etat' => 1, // Assurez-vous que l'état est géré correctement
-            'DateFin' => $validatedData['DateFin'] ?? null, // Assignation de la date de fin
+            'MiseAJour' => now(),
+            'Etat' => 1,
+            'DateFin' => $validatedData['DateFin'] ?? null,
         ]);
 
         return redirect()->route('annonces.show', $annonce->NoAnnonce)->with('success', 'Annonce mise à jour avec succès !');
@@ -164,7 +188,6 @@ class AnnonceController extends Controller
             return redirect()->route('annonces.index')->with('error', 'Vous n\'êtes pas autorisé à supprimer cette annonce.');
         }
 
-        // Supprime l'image associée si elle existe
         if ($annonce->Photo) {
             Storage::disk('public')->delete($annonce->Photo);
         }
@@ -178,7 +201,6 @@ class AnnonceController extends Controller
      */
     public function gestionAnnonces()
     {
-        // Modifié pour n'afficher que les annonces de l'utilisateur qui ne sont pas expirées dans sa gestion
         $annonces = Auth::user()->annonces()
                             ->with('categorie')
                             ->where(function ($query) {
