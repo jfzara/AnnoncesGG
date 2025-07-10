@@ -7,7 +7,7 @@ use App\Models\Categorie;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule; // N'oubliez pas d'importer la façade Rule
+use Illuminate\Validation\Rule;
 
 class AnnonceController extends Controller
 {
@@ -33,11 +33,15 @@ class AnnonceController extends Controller
      */
     public function create()
     {
+        // Vérification de l'authentification (gérée aussi par le middleware 'auth' sur la route)
         if (!Auth::check()) {
             return redirect()->route('login')->with('error', 'Vous devez être connecté pour poster une annonce.');
         }
 
+        // Chargement de toutes les catégories pour le formulaire
         $categories = Categorie::all();
+
+        // Retourne la vue de création d'annonce avec les catégories
         return view('annonces.create', compact('categories'));
     }
 
@@ -53,7 +57,7 @@ class AnnonceController extends Controller
             'Prix' => 'required|numeric|min:0',
             'Categorie' => ['required', Rule::exists('categories', 'NoCategorie')], // Utilise Rule pour une validation plus robuste
             'photo_annonce' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Nom de l'input du formulaire
-            'DateFin' => 'nullable|date|after_or_equal:today', // <<< AJOUTÉ : Nouvelle règle de validation
+            'DateFin' => 'nullable|date|after_or_equal:today', // Nouvelle règle de validation
         ]);
 
         $imagePath = null;
@@ -73,7 +77,7 @@ class AnnonceController extends Controller
             'Photo' => $imagePath,
             'MiseAJour' => now(),
             'Etat' => 1, // Par exemple, 1 pour 'active'
-            'DateFin' => $validatedData['DateFin'] ?? null, // <<< AJOUTÉ : Assignation de la date de fin
+            'DateFin' => $validatedData['DateFin'] ?? null, // Assignation de la date de fin
         ]);
 
         return redirect()->route('annonces.index')->with('success', 'Annonce créée avec succès !');
@@ -117,7 +121,7 @@ class AnnonceController extends Controller
             'Prix' => 'required|numeric|min:0',
             'Categorie' => ['required', Rule::exists('categories', 'NoCategorie')],
             'photo_annonce' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'DateFin' => 'nullable|date|after_or_equal:today', // <<< AJOUTÉ : Nouvelle règle de validation
+            'DateFin' => 'nullable|date|after_or_equal:today',
             'delete_current_image' => 'boolean', // Permet de gérer la suppression explicite de l'image
         ]);
 
@@ -144,7 +148,8 @@ class AnnonceController extends Controller
             'Categorie' => $validatedData['Categorie'],
             'Photo' => $imagePath,
             'MiseAJour' => now(), // Met à jour la date de mise à jour
-            'DateFin' => $validatedData['DateFin'] ?? null, // <<< AJOUTÉ : Assignation de la date de fin
+            'Etat' => 1, // Assurez-vous que l'état est géré correctement
+            'DateFin' => $validatedData['DateFin'] ?? null, // Assignation de la date de fin
         ]);
 
         return redirect()->route('annonces.show', $annonce->NoAnnonce)->with('success', 'Annonce mise à jour avec succès !');

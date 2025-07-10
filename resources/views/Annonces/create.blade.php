@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.app') {{-- Assurez-vous d'avoir un layout appelé 'app' --}}
 
 @section('title', 'Créer une Annonce - AnnoncesGG')
 
@@ -11,22 +11,18 @@
                     <h3 class="mb-0">Créer une nouvelle Annonce</h3>
                 </div>
                 <div class="card-body">
-                    {{-- Le bloc d'affichage des erreurs globales ($errors->any()) est supprimé ici
-                        car les erreurs sont maintenant affichées en ligne sous chaque champ.
-                        Les messages de succès/erreur de session seront gérés par des toasts. --}}
-
+                    {{-- Le formulaire doit pointer vers la route 'annonces.store' --}}
                     <form action="{{ route('annonces.store') }}" method="POST" enctype="multipart/form-data">
-                        @csrf
+                        @csrf {{-- Jeton CSRF pour la sécurité --}}
 
                         {{-- Champ: Titre --}}
-                        {{-- Ajouté pour correspondre à la nouvelle colonne 'Titre' dans la DB --}}
                         <div class="mb-3">
                             <label for="Titre" class="form-label">Titre de l'annonce <span class="text-danger">*</span></label>
                             <input type="text"
                                    class="form-control @error('Titre') is-invalid @enderror"
                                    id="Titre"
                                    name="Titre"
-                                   value="{{ old('Titre') }}"
+                                   value="{{ old('Titre') }}" {{-- old() pour conserver la valeur en cas d'erreur de validation --}}
                                    placeholder="Ex: Vélo de montagne à vendre"
                                    required
                                    maxlength="255">
@@ -70,13 +66,13 @@
                         {{-- Champ: Prix --}}
                         <div class="mb-3">
                             <label for="Prix" class="form-label">Prix ($)</label>
-                            <input type="text"
+                            <input type="text" {{-- Changez 'number' en 'text' si vous voulez le pattern HTML5 pour les décimales --}}
                                    class="form-control @error('Prix') is-invalid @enderror"
                                    id="Prix"
                                    name="Prix"
                                    value="{{ old('Prix') }}"
                                    placeholder="Ex: 124.59 (Laissez vide si gratuit)"
-                                   pattern="^\d+(\.\d{1,2})?$"
+                                   pattern="^\d+(\.\d{1,2})?$" {{-- Ajouté pour un format de prix avec ou sans décimales --}}
                                    title="Veuillez entrer un nombre avec ou sans deux décimales (ex: 124 ou 124.59)">
                             @error('Prix')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -91,7 +87,8 @@
                                    class="form-control @error('DateFin') is-invalid @enderror"
                                    id="DateFin"
                                    name="DateFin"
-                                   value="{{ old('DateFin') }}"> @error('DateFin')
+                                   value="{{ old('DateFin') }}">
+                            @error('DateFin')
                                 <div class="invalid-feedback">
                                     {{ $message }}
                                 </div>
@@ -104,7 +101,7 @@
                             <label for="Categorie" class="form-label">Catégorie <span class="text-danger">*</span></label>
                             <select class="form-control @error('Categorie') is-invalid @enderror" id="Categorie" name="Categorie" required>
                                 <option value="">-- Sélectionnez une catégorie --</option>
-                                {{-- Assurez-vous que $categories est bien passé depuis le contrôleur AnnonceController@create --}}
+                                {{-- La variable $categories doit être passée depuis le contrôleur AnnonceController@create --}}
                                 @forelse($categories as $categorie)
                                     <option value="{{ $categorie->NoCategorie }}" {{ old('Categorie') == $categorie->NoCategorie ? 'selected' : '' }}>
                                         {{ $categorie->Description }}
@@ -123,11 +120,11 @@
                         <div class="mb-3">
                             <label for="photo_annonce" class="form-label">Ajouter une Photo (Optionnel)</label>
                             <input type="file"
-                                   class="form-control @error('photo_annonce') is-invalid @enderror" {{-- Notez le 'photo_annonce' --}}
-                                   id="photo_annonce" {{-- Notez le 'photo_annonce' --}}
-                                   name="photo_annonce" {{-- C'est le 'name' que le contrôleur attend --}}
+                                   class="form-control @error('photo_annonce') is-invalid @enderror"
+                                   id="photo_annonce"
+                                   name="photo_annonce"
                                    accept="image/*">
-                            @error('photo_annonce') {{-- Notez le 'photo_annonce' --}}
+                            @error('photo_annonce')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                             <small class="form-text text-muted">Formats acceptés : JPG, PNG, GIF, SVG. Taille maximale : 2 Mo.</small>

@@ -14,9 +14,18 @@
                         @csrf
                         @method('PUT') {{-- Indique à Laravel que c'est une requête PUT/PATCH --}}
 
+                        {{-- Champ Titre --}}
+                        <div class="mb-3">
+                            <label for="Titre" class="form-label">Titre de l'Annonce</label>
+                            <input type="text" class="form-control @error('Titre') is-invalid @enderror" id="Titre" name="Titre" value="{{ old('Titre', $annonce->Titre) }}" required>
+                            @error('Titre')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         {{-- Champ Description Abrégée --}}
                         <div class="mb-3">
-                            <label for="DescriptionAbregee" class="form-label">Titre de l'Annonce</label>
+                            <label for="DescriptionAbregee" class="form-label">Description Abrégée</label>
                             <input type="text" class="form-control @error('DescriptionAbregee') is-invalid @enderror" id="DescriptionAbregee" name="DescriptionAbregee" value="{{ old('DescriptionAbregee', $annonce->DescriptionAbregee) }}" required>
                             @error('DescriptionAbregee')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -40,19 +49,22 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-<div class="mb-3">
-    <label for="DateFin" class="form-label">Date d'expiration de l'annonce (optionnel) :</label>
-    <input type="date"
-           class="form-control @error('DateFin') is-invalid @enderror"
-           id="DateFin"
-           name="DateFin"
-           value="{{ old('DateFin', $annonce->DateFin ? $annonce->DateFin->format('Y-m-d') : '') }}">
-    @error('DateFin')
-        <div class="invalid-feedback">
-            {{ $message }}
-        </div>
-    @enderror
-</div>
+
+                        {{-- Champ DateFin --}}
+                        <div class="mb-3">
+                            <label for="DateFin" class="form-label">Date d'expiration de l'annonce (optionnel) :</label>
+                            <input type="date"
+                                   class="form-control @error('DateFin') is-invalid @enderror"
+                                   id="DateFin"
+                                   name="DateFin"
+                                   value="{{ old('DateFin', $annonce->DateFin ? $annonce->DateFin->format('Y-m-d') : '') }}">
+                            @error('DateFin')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+
                         {{-- Champ Catégorie --}}
                         <div class="mb-3">
                             <label for="Categorie" class="form-label">Catégorie</label>
@@ -71,9 +83,9 @@
 
                         {{-- Champ Photo (gestion de l'upload et affichage de l'image existante) --}}
                         <div class="mb-3">
-                            <label for="Photo" class="form-label">Photo de l'Annonce</label>
-                            <input type="file" class="form-control @error('Photo') is-invalid @enderror" id="Photo" name="Photo">
-                            @error('Photo')
+                            <label for="photo_annonce" class="form-label">Photo de l'Annonce</label>
+                            <input type="file" class="form-control @error('photo_annonce') is-invalid @enderror" id="photo_annonce" name="photo_annonce">
+                            @error('photo_annonce')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
 
@@ -82,8 +94,8 @@
                                     <p>Photo actuelle :</p>
                                     <img src="{{ asset('storage/' . $annonce->Photo) }}" alt="Photo actuelle de l'annonce" style="max-width: 200px; height: auto;">
                                     <div class="form-check mt-2">
-                                        <input class="form-check-input" type="checkbox" name="supprimer_photo" id="supprimer_photo" value="1">
-                                        <label class="form-check-label" for="supprimer_photo">
+                                        <input class="form-check-input" type="checkbox" name="delete_current_image" id="delete_current_image" value="1">
+                                        <label class="form-check-label" for="delete_current_image">
                                             Supprimer la photo actuelle
                                         </label>
                                     </div>
