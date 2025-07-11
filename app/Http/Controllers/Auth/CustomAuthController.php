@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;
+use App\Models\User; // Utilisation du modèle User standard de Laravel
 use Illuminate\Validation\Rule;
 
 class CustomAuthController extends Controller
@@ -16,6 +16,10 @@ class CustomAuthController extends Controller
      */
     public function login()
     {
+        // Si l'utilisateur est déjà connecté, redirigez-le vers la page des annonces
+        if (Auth::check()) {
+            return redirect()->route('annonces.index');
+        }
         return view('auth.login');
     }
 
@@ -27,16 +31,22 @@ class CustomAuthController extends Controller
         $request->validate([
             'email' => 'required|email',
             'password' => 'required',
+        ], [
+            'email.required' => 'L\'adresse e-mail est obligatoire.',
+            'email.email' => 'Veuillez saisir une adresse e-mail valide.',
+            'password.required' => 'Le mot de passe est obligatoire.',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        // Tente de connecter l'utilisateur avec les informations fournies
+        // Auth::attempt utilise les champs 'email' et 'password' par défaut
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password], $request->boolean('remember'))) {
+            $request->session()->regenerate();
 
-        if ($user && Hash::check($request->password, $user->password)) {
-            Auth::loginUsingId($user->id);
-            // Redirige l'utilisateur vers la page des annonces après une connexion réussie
+            // Si la connexion réussit, redirige l'utilisateur vers la page prévue ou vers les annonces.
             return redirect()->intended(route('annonces.index'));
         }
 
+        // Si la connexion échoue, retourne à la page précédente avec une erreur.
         return back()->withErrors([
             'email' => 'Les informations d\'identification fournies sont incorrectes.',
         ])->onlyInput('email');
@@ -52,7 +62,8 @@ class CustomAuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        // Redirige l'utilisateur vers la page de login après la déconnexion
+        return redirect()->route('login');
     }
 
     /**
@@ -60,6 +71,10 @@ class CustomAuthController extends Controller
      */
     public function register()
     {
+        // Si l'utilisateur est déjà connecté, redirigez-le vers la page des annonces
+        if (Auth::check()) {
+            return redirect()->route('annonces.index');
+        }
         return view('auth.register');
     }
 
@@ -72,6 +87,14 @@ class CustomAuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+        ], [
+            'name.required' => 'Le nom est obligatoire.',
+            'email.required' => 'L\'adresse e-mail est obligatoire.',
+            'email.email' => 'Veuillez saisir une adresse e-mail valide.',
+            'email.unique' => 'Cette adresse e-mail est déjà utilisée.',
+            'password.required' => 'Le mot de passe est obligatoire.',
+            'password.min' => 'Le mot de passe doit contenir au moins :min caractères.',
+            'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
         ]);
 
         $user = User::create([
@@ -91,8 +114,7 @@ class CustomAuthController extends Controller
      */
     public function editProfile()
     {
-        // Correction : Utilise le nom de la vue correcte "MiseAJourProfil"
-        return view('MiseAJourProfil');
+        return view('MiseAJourProfil'); // Assurez-vous que cette vue existe bien
     }
 
     /**
@@ -102,18 +124,36 @@ class CustomAuthController extends Controller
     {
         $user = Auth::user();
 
-        $request->validate([
+        // Ajout de règles de validation pour les champs de profil
+        $rules = [
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'current_password' => 'nullable|string|min:8',
-            'password' => 'nullable|string|min:8|confirmed',
-        ]);
+        ];
 
-        if ($request->filled('password') || ($request->name !== $user->name || $request->email !== $user->email)) {
-            if (! Hash::check($request->current_password, $user->password)) {
-                return back()->withErrors(['current_password' => 'Le mot de passe actuel est incorrect.']);
-            }
+        // Ajouter les règles de mot de passe uniquement si le mot de passe actuel est fourni
+        if ($request->filled('current_password')) {
+            $rules['current_password'] = ['required', 'string', 'min:8', function ($attribute, $value, $fail) use ($user) {
+                if (!Hash::check($value, $user->password)) {
+                    $fail('Le mot de passe actuel est incorrect.');
+                }
+            }];
+            $rules['password'] = 'required|string|min:8|confirmed';
+        } elseif ($request->filled('password')) {
+            // Si un nouveau mot de passe est fourni sans l'ancien, c'est une erreur.
+            return back()->withErrors(['current_password' => 'Veuillez fournir votre mot de passe actuel pour modifier le mot de passe.']);
         }
+
+
+        $request->validate($rules, [
+            'name.required' => 'Le nom est obligatoire.',
+            'email.required' => 'L\'adresse e-mail est obligatoire.',
+            'email.email' => 'Veuillez saisir une adresse e-mail valide.',
+            'email.unique' => 'Cette adresse e-mail est déjà utilisée par un autre compte.',
+            'current_password.required' => 'Veuillez entrer votre mot de passe actuel pour enregistrer les modifications.',
+            'password.required' => 'Le nouveau mot de passe est obligatoire.',
+            'password.min' => 'Le nouveau mot de passe doit contenir au moins :min caractères.',
+            'password.confirmed' => 'La confirmation du nouveau mot de passe ne correspond pas.',
+        ]);
 
         $user->name = $request->name;
         $user->email = $request->email;

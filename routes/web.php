@@ -13,12 +13,13 @@ use Illuminate\Support\Facades\Auth;
 |--------------------------------------------------------------------------
 */
 
-// Route d'accueil publique : redirige vers les annonces si connecté, sinon affiche la page de bienvenue
+// Nouvelle Route d'accueil : redirige TOUJOURS vers la page de connexion si non authentifié.
+// Si déjà authentifié, on se fie à la redirection post-login qui est gérée par le contrôleur.
 Route::get('/', function () {
     if (Auth::check()) {
-        return redirect()->route('annonces.index');
+        return redirect()->route('annonces.index'); // Si déjà connecté, va directement aux annonces
     }
-    return view('welcome');
+    return redirect()->route('login'); // Sinon, redirige vers la page de login
 })->name('home');
 
 // Routes d'authentification (connexion et inscription)
@@ -65,6 +66,7 @@ Route::middleware('auth')->group(function () {
 
 
 // Routes Annonces publiques (accessibles à tous les visiteurs)
+// Ces routes doivent rester en dehors du middleware 'auth'
 Route::get('/annonces', [AnnonceController::class, 'index'])->name('annonces.index');
 Route::get('/annonces/{annonce}', [AnnonceController::class, 'show'])->name('annonces.show');
 
@@ -72,6 +74,3 @@ Route::get('/annonces/{annonce}', [AnnonceController::class, 'show'])->name('ann
 // Si vous les avez remplacées par le système de messagerie, elles pourraient être supprimées ou ajustées.
 Route::get('/annonces/{annonce}/contact', [App\Http\Controllers\ContactController::class, 'create'])->name('annonces.contact.create');
 Route::post('/annonces/{annonce}/contact', [App\Http\Controllers\ContactController::class, 'send'])->name('annonces.contact.send');
-
-// Si vous utilisez les routes d'authentification de Laravel Breeze/UI
-// require __DIR__.'/auth.php';
