@@ -5,26 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config('app.name', 'TrouveTout') }} - @yield('title', 'Accueil')</title>
 
-    {{-- Mise à jour vers Bootstrap 5.3.3 pour les fonctionnalités de badge avancées --}}
+    {{-- Liens CSS --}}
+    {{-- Mise à jour vers Bootstrap 5.3.3 --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
     {{-- Mise à jour vers Font Awesome 6.5.2 --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    {{-- Vous pouvez ajouter vos propres styles CSS ici --}}
+    {{-- Vos styles CSS personnalisés --}}
     @yield('styles')
 </head>
 <body>
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            {{-- Nom de l'application dynamique --}}
             <a class="navbar-brand" href="{{ route('home') }}">{{ config('app.name', 'TrouveTout') }}</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto"> {{-- mr-auto devient me-auto en Bootstrap 5 --}}
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link {{ Request::routeIs('annonces.index') ? 'active' : '' }}" href="{{ route('annonces.index') }}">Annonces</a>
                     </li>
@@ -38,14 +38,15 @@
                     @endauth
                 </ul>
 
-                <ul class="navbar-nav ms-auto"> {{-- ml-auto devient ms-auto en Bootstrap 5 --}}
+                <ul class="navbar-nav ms-auto">
                     @auth
                         {{-- Lien vers les messages avec indicateur de non lus --}}
                         <li class="nav-item me-3">
                             <a class="nav-link position-relative" href="{{ route('messages.index') }}">
                                 <i class="fas fa-envelope fa-lg"></i> Messages
                                 @php
-                                    $unreadCount = Auth::user()->unreadMessagesCount();
+                                    // Assurez-vous que Auth::user() existe et que la méthode unreadMessagesCount() est définie dans le modèle User
+                                    $unreadCount = Auth::user() ? Auth::user()->unreadMessagesCount() : 0;
                                 @endphp
                                 @if ($unreadCount > 0)
                                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
@@ -58,30 +59,23 @@
 
                         {{-- Menu déroulant pour l'utilisateur connecté --}}
                         <li class="nav-item dropdown">
-                            <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                            <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre style="color: yellow;">
                                 {{ Auth::user()->name }}
                             </a>
 
-                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown"> {{-- dropdown-menu-right devient dropdown-menu-end --}}
-                                {{-- Ajout du lien vers l'édition de profil --}}
+                            <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                                 <a class="dropdown-item" href="{{ route('profile.edit') }}">Modifier le profil</a>
-
-                                {{-- Ajout du lien vers la boîte de réception --}}
                                 <a class="dropdown-item" href="{{ route('messages.index') }}">
                                     Boîte de réception
                                     @if ($unreadCount > 0)
                                         <span class="badge bg-danger ms-1">{{ $unreadCount }}</span>
                                     @endif
                                 </a>
-
-                                {{-- Lien de déconnexion --}}
                                 <a class="dropdown-item" href="{{ route('logout') }}"
                                    onclick="event.preventDefault();
                                                  document.getElementById('logout-form').submit();">
                                     Déconnexion
                                 </a>
-
-                                {{-- Formulaire invisible pour la déconnexion --}}
                                 <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                                     @csrf
                                 </form>
@@ -107,8 +101,9 @@
         </div>
     </main>
 
-    {{-- Scripts Bootstrap 5 (Popper.js est inclus avec le bundle) --}}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    {{-- Scripts JS --}}
+    {{-- ATTENTION : LA VALEUR DE L'INTEGRITY ATTRIBUTE A ÉTÉ CORRIGÉE --}}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     @yield('scripts')
 </body>
