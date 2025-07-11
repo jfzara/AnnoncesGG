@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\CustomAuthController;
 use App\Http\Controllers\AnnonceController;
 use App\Http\Controllers\CategorieController;
+use App\Http\Controllers\MessageController; // N'oubliez pas d'importer MessageController
 use Illuminate\Support\Facades\Auth;
 
 /*
@@ -26,38 +27,59 @@ Route::post('/login', [CustomAuthController::class, 'loginPost'])->name('login.p
 Route::get('/register', [CustomAuthController::class, 'register'])->name('register');
 Route::post('/register', [CustomAuthController::class, 'registerPost'])->name('register.post');
 
-// IMPORTANT : Les routes de ressource complètes pour 'annonces' AVEC le middleware 'auth' EN PREMIER.
-// Cela garantit que '/annonces/create' est définie spécifiquement avant que '/annonces/{annonce}' ne soit vue.
 Route::middleware('auth')->group(function () {
 
     // Route de déconnexion
     Route::post('/logout', [CustomAuthController::class, 'logout'])->name('logout');
 
     // Routes CRUD complètes pour les annonces (inclut 'create', 'store', 'edit', 'update', 'destroy')
-    // Les routes 'index' et 'show' seront surchargées ou gérées par les définitions publiques ensuite.
-    // L'ordre est crucial ici.
-    Route::resource('annonces', AnnonceController::class);
+    // Placez-les ici pour s'assurer que les routes authentifiées priment si besoin.
+    Route::resource('annonces', AnnonceController::class)->except(['index', 'show']);
+    // On exclut index et show ici car elles sont définies publiquement plus bas.
 
     // Route pour la gestion des annonces de l'utilisateur (tableau de bord personnel)
-    // Assurez-vous que cette route n'entre pas en conflit avec les routes de ressources.
-    // Si 'annonces.gestion' est distinct de la ressource, elle est bien placée ici.
     Route::get('/gestion-annonces', [AnnonceController::class, 'gestionAnnonces'])->name('annonces.gestion');
 
     // Routes pour la modification du profil utilisateur
+    // Si ProfileController est utilisé par Laravel Breeze/Jetstream, laissez celles par défaut
+    // Sinon, celles-ci sont ok si elles sont dans CustomAuthController
     Route::get('/mise-a-jour-profil', [CustomAuthController::class, 'editProfile'])->name('profile.edit');
     Route::put('/profile', [CustomAuthController::class, 'updateProfile'])->name('profile.update');
 
     // Routes pour la gestion des catégories
     Route::resource('categories', CategorieController::class);
 
-    // Routes pour le formulaire de contact spécifique à une annonce
-    Route::get('/annonces/{annonce}/contact', [App\Http\Controllers\ContactController::class, 'create'])->name('annonces.contact.create');
-    Route::post('/annonces/{annonce}/contact', [App\Http\Controllers\ContactController::class, 'send'])->name('annonces.contact.send');
+    // --- NOUVELLES ROUTES POUR LA MESSAGERIE ---
+    // Route pour afficher toutes les conversations de l'utilisateur (Inbox)
+    Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
+
+    // Route pour afficher une conversation spécifique.
+    // Utilise le Route Model Binding pour 'annonce' et 'otherUser'.
+    // Important: 'otherUser' doit correspondre au nom de la variable dans la méthode du contrôleur.
+    Route::get('/messages/{annonce}/{otherUser}', [MessageController::class, 'show'])->name('messages.show');
+
+    // Route pour envoyer un message.
+    // Elle nécessite l'ID de l'annonce et l'ID du destinataire.
+    Route::post('/messages/{annonce}', [MessageController::class, 'store'])->name('messages.store');
+
+    // Route pour marquer un message comme lu (peut être utile pour AJAX)
+    Route::post('/messages/{message}/read', [MessageController::class, 'markAsRead'])->name('messages.markAsRead');
+    // ----------------------------------------
 });
 
 
 // Routes Annonces publiques (accessibles à tous les visiteurs)
-// Définies APRÈS les routes de ressources pour éviter les conflits avec '/create' ou '/{id}/edit' etc.
-// Ces routes doivent être placées après toutes les routes de ressources qui ont des segments fixes.
+// Définies APRES les routes de ressources authentifiées pour éviter les conflits
+// et s'assurer que les routes publiques sont bien les GET 'index' et 'show'.
 Route::get('/annonces', [AnnonceController::class, 'index'])->name('annonces.index');
 Route::get('/annonces/{annonce}', [AnnonceController::class, 'show'])->name('annonces.show');
+
+// Si vous avez un ContactController séparé pour un formulaire de contact général (non lié aux messages)
+// Ces routes semblent être pour un formulaire de contact d'annonce.
+// Si vous les avez remplacées par le système de messagerie, elles pourraient être supprimées ou ajustées.
+// Je les laisse pour l'instant comme dans votre code original, si elles sont toujours pertinentes.
+Route::get('/annonces/{annonce}/contact', [App\Http\Controllers\ContactController::class, 'create'])->name('annonces.contact.create');
+Route::post('/annonces/{annonce}/contact', [App\Http\Controllers\ContactController::class, 'send'])->name('annonces.contact.send');
+
+// Si vous utilisez les routes d'authentification de Laravel Breeze/UI, les lignes suivantes sont souvent à la fin:
+// require __DIR__.'/auth.php'; // Décommenter si vous utilisez auth.php pour les routes auth de Laravel

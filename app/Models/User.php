@@ -2,19 +2,20 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $fillable = [
         'name',
         'email',
         'password',
-        'role', // Ajout de la colonne 'role'
     ];
 
     protected $hidden = [
@@ -28,28 +29,22 @@ class User extends Authenticatable
     ];
 
     /**
-     * Un utilisateur (User) peut avoir plusieurs annonces.
+     * Get the messages that are unread for the user.
+     * This now correctly uses 'where' for a boolean 'read_at_receiver' field.
      */
-    public function annonces()
+    public function unreadMessages()
     {
-        // Spécifiez la clé étrangère 'NoUtilisateur' dans la table 'annonces'
-        // et la clé locale 'id' dans la table 'users'.
-        return $this->hasMany(Annonce::class, 'NoUtilisateur', 'id');
+        // Modifié pour utiliser 'where(false)' car 'read_at_receiver' est un booléen
+        return $this->hasMany(Message::class, 'receiver_id')
+                    ->where('read_at_receiver', false); // <--- C'est la LIGNE CLÉ modifiée
     }
 
     /**
-     * Vérifie si l'utilisateur a le rôle 'admin'.
+     * Get all conversations the user is a part of (as sender or receiver).
      */
-    public function isAdmin()
+    public function conversations()
     {
-        return $this->role === 'admin';
-    }
-
-    /**
-     * Vérifie si l'utilisateur a le rôle 'user'.
-     */
-    public function isUser()
-    {
-        return $this->role === 'user';
+        return $this->hasMany(Conversation::class, 'sender_id')
+                    ->orWhere('receiver_id', $this->id);
     }
 }

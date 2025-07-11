@@ -22,6 +22,7 @@ class AnnonceController extends Controller
         // $sort = $request->query('sort'); // Pour le tri, si on l'ajoute plus tard
 
         // Commencer la requête de base pour les annonces non expirées
+        // IMPORTANT : Charger les relations 'user' et 'categorie' ici
         $annoncesQuery = Annonce::with(['user', 'categorie'])
                                 ->where(function ($query) {
                                     $query->whereNull('DateFin')
@@ -202,13 +203,13 @@ class AnnonceController extends Controller
     public function gestionAnnonces()
     {
         $annonces = Auth::user()->annonces()
-                            ->with('categorie')
-                            ->where(function ($query) {
-                                $query->whereNull('DateFin')
-                                      ->orWhere('DateFin', '>=', now());
-                            })
-                            ->orderByDesc('Parution')
-                            ->paginate(10);
+                                ->with('categorie') // Charger la catégorie ici aussi si vous en avez besoin dans la vue de gestion
+                                ->where(function ($query) {
+                                    $query->whereNull('DateFin')
+                                          ->orWhere('DateFin', '>=', now());
+                                })
+                                ->orderByDesc('Parution')
+                                ->paginate(10);
 
         return view('annonces.gestion', compact('annonces'));
     }

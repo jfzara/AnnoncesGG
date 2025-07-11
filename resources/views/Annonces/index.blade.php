@@ -3,7 +3,7 @@
 @section('title', 'Toutes les Annonces - AnnoncesGG')
 
 @section('content')
-<div class="container mt-4"> {{-- J'ai changé la div principale pour 'container' avec marge --}}
+<div class="container mt-4">
     <div class="row">
         <div class="col-12">
             <h1 class="mb-4">Toutes les Annonces</h1>
@@ -12,7 +12,7 @@
             @if (session('success'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> {{-- Utilisez btn-close pour Bootstrap 5+ --}}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
 
@@ -47,7 +47,7 @@
                             <option value="all">Toutes les catégories</option>
                             @foreach($categories as $cat)
                                 <option value="{{ $cat->NoCategorie }}" {{ request('category') == $cat->NoCategorie ? 'selected' : '' }}>
-                                    {{ $cat->Description }} {{-- Assurez-vous que c'est bien 'Description' et non 'NomCategorie' si c'est le cas --}}
+                                    {{ $cat->Description }}
                                 </option>
                             @endforeach
                         </select>
@@ -73,25 +73,24 @@
                     <p class="mb-0 mt-1">Essayez une autre recherche ou <a href="{{ route('annonces.index') }}">réinitialisez les filtres</a>.</p>
                 </div>
             @else
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"> {{-- Utilise les classes Bootstrap pour des cartes responsives --}}
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                     @foreach ($annonces as $annonce)
                         <div class="col">
-                            <div class="card h-100 shadow-sm border-0"> {{-- h-100 pour hauteur égale, border-0 pour un look plus moderne --}}
+                            <div class="card h-100 shadow-sm border-0">
                                 @if ($annonce->Photo)
                                     <img src="{{ asset('storage/' . $annonce->Photo) }}" class="card-img-top" alt="{{ $annonce->Titre }}" style="height: 200px; object-fit: cover; border-top-left-radius: .25rem; border-top-right-radius: .25rem;">
                                 @else
-                                    {{-- Assurez-vous d'avoir une image par défaut dans public/images/default_annonce.png --}}
                                     <img src="{{ asset('images/default_annonce.png') }}" class="card-img-top" alt="Pas d'image" style="height: 200px; object-fit: cover; border-top-left-radius: .25rem; border-top-right-radius: .25rem;">
                                 @endif
                                 <div class="card-body d-flex flex-column">
                                     <h5 class="card-title text-primary">{{ $annonce->Titre }}</h5>
                                     <p class="card-text text-muted small mb-1">
-                                        <i class="fas fa-tag"></i> Catégorie: {{ $annonce->categorie->Description ?? 'N/A' }} {{-- Vérifiez bien le nom de la colonne 'Description' ou 'NomCategorie' --}}
+                                        <i class="fas fa-tag"></i> Catégorie: {{ $annonce->categorie->Description ?? 'N/A' }}
                                     </p>
                                     <p class="card-text text-muted small mb-2">
                                         <i class="fas fa-user"></i> Posté par: {{ $annonce->user->name ?? 'Utilisateur inconnu' }}
                                     </p>
-                                    <p class="card-text">{{ Str::limit($annonce->DescriptionAbregee, 100, '...') }}</p> {{-- Ajout de '...' --}}
+                                    <p class="card-text">{{ Str::limit($annonce->DescriptionAbregee, 100, '...') }}</p>
 
                                     <div class="mt-auto d-flex justify-content-between align-items-center pt-2">
                                         <span class="h4 mb-0 text-success fw-bold">{{ $annonce->Prix ? number_format($annonce->Prix, 2, ',', ' ') . ' $' : 'Gratuit / À discuter' }}</span>
@@ -100,7 +99,13 @@
 
                                     <div class="mt-3 text-end">
                                         @auth
-                                            @if (Auth::id() === $annonce->NoUtilisateur)
+                                            {{-- Le bloc conditionnel pour le bouton "Contacter" --}}
+                                            @if ($annonce->user && Auth::id() !== $annonce->user->id)
+                                                <a href="{{ route('messages.show', ['annonce' => $annonce->NoAnnonce, 'otherUser' => $annonce->user->id]) }}"
+                                                   class="btn btn-success btn-sm" title="Contacter le vendeur">
+                                                    <i class="fas fa-envelope"></i> Contacter
+                                                </a>
+                                            @elseif (Auth::id() === $annonce->NoUtilisateur) {{-- NoUtilisateur est l'ID du propriétaire de l'annonce --}}
                                                 {{-- Liens pour l'auteur de l'annonce --}}
                                                 <a href="{{ route('annonces.edit', $annonce->NoAnnonce) }}" class="btn btn-warning btn-sm me-1" title="Modifier l'annonce">
                                                     <i class="fas fa-edit"></i>
@@ -112,11 +117,12 @@
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
-                                            @else
-                                                {{-- Bouton de contact pour les autres utilisateurs (à implémenter si ce n'est pas déjà fait) --}}
-                                                {{-- Assurez-vous d'avoir la route 'annonces.contact.create' définie --}}
-                                                <a href="#" class="btn btn-success btn-sm" title="Contacter le vendeur"><i class="fas fa-envelope"></i> Contacter</a>
                                             @endif
+                                        @else
+                                            {{-- Si l'utilisateur n'est pas authentifié, invite à se connecter --}}
+                                            <a href="{{ route('login') }}" class="btn btn-outline-secondary btn-sm" title="Connectez-vous pour contacter">
+                                                <i class="fas fa-sign-in-alt"></i> Connectez-vous pour contacter
+                                            </a>
                                         @endauth
                                     </div>
                                 </div>
@@ -135,7 +141,7 @@
 
                 {{-- Pagination --}}
                 <div class="d-flex justify-content-center mt-4">
-                    {{ $annonces->links('pagination::bootstrap-5') }} {{-- Assurez-vous d'utiliser 'bootstrap-5' si vous êtes sur Bootstrap 5 --}}
+                    {{ $annonces->links('pagination::bootstrap-5') }}
                 </div>
             @endif
         </div>
