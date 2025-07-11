@@ -9,10 +9,17 @@ class UnreadMessageCountComposer
 {
     public function compose(View $view)
     {
-        $unreadMessageCount = 0;
         if (Auth::check()) {
-            $unreadMessageCount = Auth::user()->unreadMessages()->count();
+            // C'est ici que l'erreur se produit
+            // La ligne incorrecte était probablement : $unreadCount = Auth::user()->unreadMessages()->count();
+            // Ou même : $unreadCount = Auth::user()->unreadMessages();
+
+            // Correction : Appeler la méthode unreadMessagesCount() qui retourne directement le nombre.
+            $unreadCount = Auth::user()->unreadMessagesCount(); // Ligne 14
+        } else {
+            $unreadCount = 0;
         }
-        $view->with('unreadMessageCount', $unreadMessageCount);
+
+        $view->with('unreadCount', $unreadCount);
     }
 }

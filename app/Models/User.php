@@ -28,10 +28,15 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    public function unreadMessages()
+    /**
+     * Obtenir le nombre de messages non lus pour cet utilisateur.
+     * Cette méthode renvoie directement le compte.
+     */
+    public function unreadMessagesCount()
     {
-        return $this->hasMany(Message::class, 'receiver_id')
-                    ->where('read_at_receiver', false);
+        return $this->receivedMessages()
+                    ->where('read_at_receiver', false)
+                    ->count();
     }
 
     // Relation pour les annonces publiées par cet utilisateur
@@ -50,6 +55,4 @@ class User extends Authenticatable
     {
         return $this->hasMany(Message::class, 'receiver_id');
     }
-    // La relation 'conversations' a été supprimée car elle référençait un modèle 'Conversation'
-    // qui n'était pas défini et compliquait inutilement la logique qui est mieux gérée dans le contrôleur.
 }
