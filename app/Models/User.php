@@ -28,23 +28,28 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    /**
-     * Get the messages that are unread for the user.
-     * This now correctly uses 'where' for a boolean 'read_at_receiver' field.
-     */
     public function unreadMessages()
     {
-        // Modifié pour utiliser 'where(false)' car 'read_at_receiver' est un booléen
         return $this->hasMany(Message::class, 'receiver_id')
-                    ->where('read_at_receiver', false); // <--- C'est la LIGNE CLÉ modifiée
+                    ->where('read_at_receiver', false);
     }
 
-    /**
-     * Get all conversations the user is a part of (as sender or receiver).
-     */
-    public function conversations()
+    // Relation pour les annonces publiées par cet utilisateur
+    public function annonces()
     {
-        return $this->hasMany(Conversation::class, 'sender_id')
-                    ->orWhere('receiver_id', $this->id);
+        return $this->hasMany(Annonce::class, 'NoUtilisateur', 'id');
     }
+
+    // Relations pour les messages envoyés et reçus (pour une meilleure clarté)
+    public function sentMessages()
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function receivedMessages()
+    {
+        return $this->hasMany(Message::class, 'receiver_id');
+    }
+    // La relation 'conversations' a été supprimée car elle référençait un modèle 'Conversation'
+    // qui n'était pas défini et compliquait inutilement la logique qui est mieux gérée dans le contrôleur.
 }

@@ -33,19 +33,18 @@
                 @php
                     // Déterminer si le message a été envoyé par l'utilisateur connecté
                     $isSender = ($message->sender_id === Auth::id());
-                    $messageClass = $isSender ? 'bg-success text-white ms-auto' : 'bg-primary text-white me-auto'; // Vert pour l'expéditeur, Bleu pour le destinataire
-                    $alignment = $isSender ? 'text-end' : 'text-start'; // Alignement à droite pour l'expéditeur
+                    // Utilisez un alignement CSS basé sur l'expéditeur
+                    $alignmentClass = $isSender ? 'justify-content-end' : 'justify-content-start';
+                    $messageBubbleClass = $isSender ? 'bg-success text-white' : 'bg-primary text-white'; // Vert pour l'expéditeur, Bleu pour le destinataire
                 @endphp
-                <div class="d-flex {{ $alignment }} mb-2">
-                    <div class="card {{ $messageClass }}" style="max-width: 75%;">
+                <div class="d-flex {{ $alignmentClass }} mb-2">
+                    <div class="message-bubble card {{ $messageBubbleClass }}" style="max-width: 75%;">
                         <div class="card-body p-2">
                             <p class="card-text mb-1">{{ $message->content }}</p>
-                            <small class="text-light opacity-75">
+                            <small class="text-light opacity-75 d-block">
                                 {{ $message->created_at->format('d/m/Y H:i') }}
                                 @if ($isSender && $message->read_at_receiver)
                                     <i class="fas fa-check-double text-info ms-1" title="Lu par {{ $otherUser->name }}"></i>
-                                @elseif (!$isSender && $message->read_at_sender && $message->read_at_receiver)
-                                    {{-- Ceci ne devrait pas arriver si le récepteur est l'utilisateur courant et qu'il vient de lire --}}
                                 @endif
                             </small>
                         </div>
@@ -58,10 +57,10 @@
     {{-- Formulaire de réponse --}}
     <div class="card p-3 shadow-sm">
         <h5 class="mb-3">Envoyer un message</h5>
-        <form action="{{ route('messages.store', $annonce->NoAnnonce) }}" method="POST">
+        <form action="{{ route('messages.store', ['annonce' => $annonce->NoAnnonce, 'otherUser' => $otherUser->id]) }}" method="POST">
             @csrf
-            {{-- Champ caché pour l'ID du destinataire --}}
-            <input type="hidden" name="receiver_id" value="{{ $otherUser->id }}">
+            {{-- Champ caché pour l'ID du destinataire (déjà inclus via otherUser dans la route, mais peut servir de fallback) --}}
+            {{-- <input type="hidden" name="receiver_id" value="{{ $otherUser->id }}"> --}}
 
             <div class="mb-3">
                 <textarea name="content" id="content" class="form-control" rows="3" placeholder="Écrivez votre message ici..." required></textarea>

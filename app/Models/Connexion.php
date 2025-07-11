@@ -12,9 +12,10 @@ class Connexion extends Model
     protected $table = 'connexions';
     protected $primaryKey = 'NoConnexion';
 
-    // Une connexion appartient à un utilisateur
     public function utilisateur()
     {
+        // Attention: Assurez-vous que le modèle 'Utilisateur' existe
+        // Si votre modèle utilisateur principal est 'User', cela devrait être User::class
         return $this->belongsTo(Utilisateur::class, 'NoUtilisateur');
     }
 }
