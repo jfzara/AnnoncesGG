@@ -1,23 +1,25 @@
 @extends('layouts.app')
 
-@section('title', 'Ma Messagerie')
+@section('title', 'Mes Conversations')
 
 @section('content')
 <div class="container mt-4">
-    <h1 class="mb-4">Ma Messagerie</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Mes Conversations</h1>
+        <a href="{{ route('annonces.index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-search"></i> Parcourir les annonces
+        </a>
+    </div>
 
-    {{-- Messages Flash (inchangés) --}}
     @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success">
             {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
     @if (session('error'))
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="alert alert-danger">
             {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
@@ -30,45 +32,45 @@
             @foreach ($conversations as $conversation)
                 @php
                     $currentUser = Auth::user();
-                    $otherParticipant = ($conversation->sender_id === $currentUser->id)
-                                        ? $conversation->receiver
-                                        : $conversation->sender;
+                    // L'otherUser est directement disponible sur l'objet conversation que nous avons créé
+                    $otherParticipant = $conversation->otherUser;
                     $annonce = $conversation->annonce;
+                    $lastMessage = $conversation->lastMessage;
 
                     // Vérifier si la conversation a des messages non lus pour l'utilisateur actuel
-                    // C'est le cas si l'utilisateur est le receveur du DERNIER message et qu'il n'est pas lu.
-                    $hasUnread = ($conversation->receiver_id === $currentUser->id && !$conversation->read_at_receiver);
+                    // (le 'unreadCount' est déjà calculé dans le contrôleur)
+                    $hasUnread = $conversation->unreadCount > 0;
                 @endphp
-
-                <a href="{{ route('messages.show', ['annonce' => $annonce->NoAnnonce, 'otherUserId' => $otherParticipant->id]) }}"
-                   class="list-group-item list-group-item-action py-3 @if($hasUnread) list-group-item-info @else bg-white @endif d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="mb-1">
-                            <i class="fas fa-user-circle me-2"></i> Conversation avec
-                            <strong>{{ $otherParticipant->name ?? 'Utilisateur inconnu' }}</strong>
-                        </h5>
-                        <p class="mb-1 text-muted small">
-                            <i class="fas fa-tag me-1"></i> Annonce: {{ $annonce->Titre ?? 'Annonce supprimée' }}
-                        </p>
-                        <p class="mb-0 text-dark">
-                            <i class="fas fa-comment-dots me-1"></i> {{ Str::limit($conversation->content, 80) }}
-                        </p>
-                    </div>
-                    <div class="text-end">
-                        <small class="text-muted d-block mb-1">
-                            <i class="fas fa-clock me-1"></i> {{ $conversation->created_at->diffForHumans() }}
+                <a href="{{ route('messages.show', ['annonce' => $annonce->NoAnnonce, 'otherUser' => $otherParticipant->id]) }}"
+                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {{ $hasUnread ? 'list-group-item-info' : '' }}">
+                    <div class="d-flex w-100 justify-content-between">
+                        <div>
+                            <h5 class="mb-1">
+                                Conversation avec <span class="text-primary">{{ $otherParticipant->name ?? 'Utilisateur inconnu' }}</span>
+                                <small class="text-muted d-block">à propos de "{{ Str::limit($annonce->Titre, 40) }}"</small>
+                            </h5>
+                            <p class="mb-1 text-muted">
+                                Dernier message :
+                                <span class="text-dark">
+                                    @if ($lastMessage->sender_id === $currentUser->id)
+                                        Vous :
+                                    @else
+                                        {{ $otherParticipant->name ?? 'Quelqu\'un' }} :
+                                    @endif
+                                </span>
+                                {{ Str::limit($lastMessage->content, 80) }}
+                            </p>
+                        </div>
+                        <small class="text-muted text-end">
+                            {{ $lastMessage->created_at->diffForHumans() }}
+                            @if ($hasUnread)
+                                <span class="badge bg-danger rounded-pill ms-2">{{ $conversation->unreadCount }}</span>
+                            @endif
                         </small>
-                        @if ($hasUnread)
-                            <span class="badge bg-danger rounded-pill">Nouveau !</span>
-                        @endif
                     </div>
                 </a>
             @endforeach
         </div>
-        {{-- Vous pouvez ajouter de la pagination ici si $conversations est un paginateur --}}
-        {{-- <div class="d-flex justify-content-center mt-4">
-            {{ $conversations->links() }}
-        </div> --}}
     @endif
 </div>
 @endsection

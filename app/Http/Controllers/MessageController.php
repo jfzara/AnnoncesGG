@@ -7,7 +7,8 @@ use App\Models\Message;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB; // Ajouté pour la méthode index
+use Illuminate\Support\Facades\DB; // Pas directement utilisé dans cette version, mais utile si besoin
+use Illuminate\Support\Facades\Log; // Ajouté pour le débogage si nécessaire
 
 class MessageController extends Controller
 {
@@ -16,8 +17,6 @@ class MessageController extends Controller
         $this->middleware('auth');
     }
 
-    // La méthode 'create' est moins pertinente si vous utilisez messages.show pour le premier message.
-    // Je la laisse telle quelle pour ne pas casser votre code si vous l'utilisez ailleurs.
     public function create(Annonce $annonce)
     {
         if (Auth::id() === $annonce->NoUtilisateur) {
@@ -30,15 +29,6 @@ class MessageController extends Controller
         return view('messages.create', compact('annonce', 'sender', 'receiver'));
     }
 
-    /**
-     * Stocke un nouveau message dans la base de données.
-     * La route passera 'annonce' et 'otherUser'.
-     *
-     * @param Request $request
-     * @param Annonce $annonce L'annonce à laquelle le message est lié.
-     * @param User $otherUser L'autre utilisateur (destinataire du message).
-     * @return \Illuminate\Http\RedirectResponse
-     */
     public function store(Request $request, Annonce $annonce, User $otherUser)
     {
         $request->validate([
@@ -46,9 +36,8 @@ class MessageController extends Controller
         ]);
 
         $senderId = Auth::id();
-        $receiverId = $otherUser->id; // Le destinataire est l'otherUser passé par le Route Model Binding
+        $receiverId = $otherUser->id;
 
-        // Empêcher l'utilisateur de s'envoyer un message à lui-même
         if ((int) $senderId === (int) $receiverId) {
             return back()->with('error', 'Vous ne pouvez pas vous envoyer de message.');
         }
@@ -58,11 +47,10 @@ class MessageController extends Controller
             'sender_id' => $senderId,
             'receiver_id' => $receiverId,
             'content' => $request->input('content'),
-            'read_at_sender' => true, // Le message est lu par l'expéditeur dès l'envoi
-            'read_at_receiver' => false, // Le message n'est pas lu par le destinataire par défaut
+            'read_at_sender' => true,
+            'read_at_receiver' => false,
         ]);
 
-        // Redirige vers la conversation spécifique
         return redirect()->route('messages.show', [
             'annonce' => $annonce->NoAnnonce,
             'otherUser' => $receiverId
@@ -78,100 +66,83 @@ class MessageController extends Controller
     {
         $userId = Auth::id();
 
-        // Récupérer les identifiants uniques des annonces et des autres utilisateurs impliqués
-        // dans les messages de l'utilisateur courant.
-        $conversationPartners = Message::select('annonce_id')
-            ->selectRaw('CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END AS other_user_id', [$userId])
-            ->where(function ($query) use ($userId) {
-                $query->where('sender_id', $userId)
-                      ->orWhere('receiver_id', $userId);
-            })
-            ->distinct()
+        // Récupérer tous les messages où l'utilisateur est l'expéditeur ou le destinataire,
+        // et charger les relations sender, receiver et annonce pour éviter les N+1 queries.
+        $allMessages = Message::where('sender_id', $userId)
+            ->orWhere('receiver_id', $userId)
+            ->with(['sender', 'receiver', 'annonce'])
+            ->orderBy('created_at', 'desc')
             ->get();
 
-        $conversations = collect();
+        $conversations = $allMessages->groupBy(function ($message) use ($userId) {
+            // Créer une clé unique pour chaque conversation, indépendante de l'ordre des participants.
+            // Ceci assure que les messages entre A et B sur l'annonce X sont regroupés ensemble,
+            // que A soit sender/B receiver ou B sender/A receiver.
+            $participantIds = collect([$message->sender_id, $message->receiver_id])->sort()->implode('-');
+            return $message->annonce_id . '-' . $participantIds;
+        })->map(function ($messagesInConversation) use ($userId) {
+            // Pour chaque groupe (conversation), prendre le dernier message pour les informations de base
+            $lastMessage = $messagesInConversation->first(); // Premier après le orderByDesc, donc le plus récent
 
-        foreach ($conversationPartners as $partner) {
-            $annonceId = $partner->annonce_id;
-            $otherUserId = $partner->other_user_id;
+            // Déterminer l'autre participant
+            $otherUser = ($lastMessage->sender_id === $userId) ? $lastMessage->receiver : $lastMessage->sender;
 
-            // Récupérer le dernier message de cette conversation spécifique
-            $lastMessage = Message::where('annonce_id', $annonceId)
-                ->where(function ($query) use ($userId, $otherUserId) {
-                    $query->where(function ($q) use ($userId, $otherUserId) {
-                        $q->where('sender_id', $userId)
-                          ->where('receiver_id', $otherUserId);
-                    })->orWhere(function ($q) use ($userId, $otherUserId) {
-                        $q->where('sender_id', $otherUserId)
-                          ->where('receiver_id', $userId);
-                    });
-                })
-                ->orderByDesc('created_at')
-                ->first();
+            // Compter les messages non lus pour l'utilisateur courant dans cette conversation
+            $unreadCount = $messagesInConversation
+                ->where('receiver_id', $userId)
+                ->where('read_at_receiver', false)
+                ->count();
 
-            if ($lastMessage) {
-                // Compter les messages non lus pour l'utilisateur courant dans cette conversation
-                $unreadCount = Message::where('annonce_id', $annonceId)
-                    ->where('receiver_id', $userId)
-                    ->where('sender_id', $otherUserId) // Messages envoyés par l'autre utilisateur
-                    ->where('read_at_receiver', false)
-                    ->count();
-
-                $conversations->push((object) [
-                    'annonce' => $lastMessage->annonce,
-                    'otherUser' => ($lastMessage->sender_id === $userId) ? $lastMessage->receiver : $lastMessage->sender,
-                    'lastMessage' => $lastMessage,
-                    'unreadCount' => $unreadCount,
-                ]);
-            }
-        }
-
-        // Trier les conversations par la date du dernier message
-        $conversations = $conversations->sortByDesc(function ($conversation) {
+            // Retourner un objet structuré pour la vue
+            return (object) [
+                'annonce' => $lastMessage->annonce,
+                'otherUser' => $otherUser,
+                'lastMessage' => $lastMessage, // Contient le message le plus récent de la conversation
+                'unreadCount' => $unreadCount,
+            ];
+        })->sortByDesc(function ($conversation) {
+            // Trier les conversations par la date du dernier message
             return $conversation->lastMessage->created_at;
         });
 
         return view('messages.index', compact('conversations'));
     }
 
+
     /**
      * Affiche une conversation spécifique entre deux utilisateurs concernant une annonce.
+     * Cette méthode est également utilisée pour initier une nouvelle conversation.
      *
      * @param Annonce $annonce L'annonce concernée par la conversation.
-     * @param User $otherUser L'autre utilisateur dans la conversation.
+     * @param User $otherUser L'autre utilisateur dans la conversation (l'annonceur ou la personne contactée).
      * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
     public function show(Annonce $annonce, User $otherUser)
     {
         $currentUser = Auth::user();
 
-        // Empêcher l'utilisateur de consulter une conversation avec lui-même
+        // 1. Empêcher l'utilisateur de consulter une conversation avec lui-même
         if ($currentUser->id === $otherUser->id) {
             return redirect()->route('messages.index')->with('error', 'Vous ne pouvez pas consulter une conversation avec vous-même.');
         }
 
-        // Vérifier si l'utilisateur courant est bien l'un des participants de cette conversation
-        // Si l'utilisateur courant n'est ni l'expéditeur de l'annonce, ni l'otherUser,
-        // et qu'aucune conversation n'existe entre eux pour cette annonce, rediriger.
-        // On ne vérifie pas 'Annonce->NoUtilisateur' ici directement, mais la présence de messages.
-        $hasAccess = Message::where('annonce_id', $annonce->NoAnnonce)
-            ->where(function ($query) use ($currentUser, $otherUser) {
-                $query->where(function ($q) use ($currentUser, $otherUser) {
-                    $q->where('sender_id', $currentUser->id)
-                      ->where('receiver_id', $otherUser->id);
-                })->orWhere(function ($q) use ($currentUser, $otherUser) {
-                    $q->where('sender_id', $otherUser->id)
-                      ->where('receiver_id', $currentUser->id);
-                });
-            })
-            ->exists();
+        // 2. Vérification d'accès : l'utilisateur courant doit être l'un des deux participants de la conversation.
+        // Les deux participants sont l'utilisateur connecté ($currentUser) et l'autre utilisateur ($otherUser, qui est l'annonceur).
+        // Si l'utilisateur courant n'est ni l'annonceur, ni la personne qui contacte l'annonceur, alors il n'a pas accès.
+        // Cette condition est cruciale pour éviter qu'un utilisateur C ne puisse voir une conversation entre A et B.
+        $isLegitimateParticipant = (
+            ($currentUser->id === $annonce->NoUtilisateur && $otherUser->id !== $currentUser->id) || // L'utilisateur est l'annonceur et l'autre est un contact
+            ($currentUser->id !== $annonce->NoUtilisateur && $otherUser->id === $annonce->NoUtilisateur) // L'utilisateur est le contact et l'autre est l'annonceur
+        );
 
-        if (!$hasAccess) {
-             return redirect()->route('messages.index')->with('error', 'Conversation introuvable ou vous n\'avez pas les droits d\'accès.');
+        if (!$isLegitimateParticipant) {
+             // Log::warning("Accès non autorisé à la conversation. User: {$currentUser->id}, Annonce: {$annonce->NoAnnonce}, OtherUser: {$otherUser->id}");
+             return redirect()->route('messages.index')->with('error', 'Vous n\'avez pas les droits d\'accès à cette conversation.');
         }
 
 
-        // Récupérer les messages entre les deux utilisateurs pour cette annonce spécifique
+        // Récupérer tous les messages entre les deux utilisateurs pour cette annonce spécifique.
+        // Si aucun message n'existe encore, la collection sera vide, ce qui est attendu pour une nouvelle conversation.
         $messages = Message::where('annonce_id', $annonce->NoAnnonce)
             ->where(function ($query) use ($currentUser, $otherUser) {
                 $query->where(function ($q) use ($currentUser, $otherUser) {
@@ -183,20 +154,20 @@ class MessageController extends Controller
                 });
             })
             ->orderBy('created_at', 'asc')
-            ->with(['sender', 'receiver']) // Eager load sender and receiver for display
+            ->with(['sender', 'receiver', 'annonce']) // Assurez-vous que les relations sont chargées
             ->get();
 
-        // Marquer comme lus tous les messages reçus par l'utilisateur courant dans cette conversation
+        // Marquer comme lus tous les messages reçus par l'utilisateur courant
+        // qui proviennent de l'otherUser pour cette annonce spécifique.
         Message::where('annonce_id', $annonce->NoAnnonce)
             ->where('receiver_id', $currentUser->id)
-            ->where('sender_id', $otherUser->id) // Uniquement les messages envoyés par l'otherUser
+            ->where('sender_id', $otherUser->id)
             ->where('read_at_receiver', false)
             ->update(['read_at_receiver' => true]);
 
         return view('messages.show', compact('messages', 'annonce', 'otherUser'));
     }
 
-    // La méthode 'markAsRead' reste identique, elle est correcte pour marquer un message unique.
     public function markAsRead(Message $message)
     {
         $userId = Auth::id();
