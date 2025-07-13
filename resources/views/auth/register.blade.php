@@ -1,85 +1,82 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription - AnnoncesGG</title>
-    <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f0f2f5; margin: 0; }
-        .register-container { background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { text-align: center; color: #333; margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; color: #555; }
-        input[type="text"],
-        input[type="email"],
-        input[type="password"] {
-            width: calc(100% - 20px);
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .btn-register {
-            width: 100%;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-        .btn-register:hover { background-color: #0056b3; }
-        .alert-danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 4px; padding: 10px; margin-bottom: 15px; }
-        .text-center { text-align: center; margin-top: 15px; }
-        .text-center a { color: #007bff; text-decoration: none; }
-        .text-center a:hover { text-decoration: underline; }
-    </style>
-</head>
-<body>
-    <div class="register-container">
-        <h2>Inscription</h2>
+@extends('layouts.app')
 
-        @if ($errors->any())
-            <div class="alert-danger">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+@section('title', 'Inscription - TrouveTout')
+
+@section('content')
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-lg custom-auth-card border-0"> {{-- Carte avec ombre, style personnalisé et sans bordure --}}
+                <div class="card-header custom-gradient-header text-white text-center py-3">
+                    <h4 class="mb-0"><i class="fas fa-user-plus me-2"></i> {{ __('Créez votre compte') }}</h4> {{-- Icône et texte centré --}}
+                </div>
+                <div class="card-body p-4">
+                    {{-- Affichage des messages d'erreur de validation --}}
+                    @if ($errors->any())
+                        <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <div>
+                                <ul class="mb-0 ps-3">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('register.post') }}">
+                        @csrf
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label custom-label-auth">{{ __('Nom d\'utilisateur') }}</label>
+                            <input id="name" type="text" class="form-control form-control-lg custom-form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" required autocomplete="name" autofocus placeholder="Votre nom d'utilisateur">
+                            @error('name')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label custom-label-auth">{{ __('Adresse E-mail') }}</label>
+                            <input id="email" type="email" class="form-control form-control-lg custom-form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" placeholder="Votre adresse e-mail">
+                            @error('email')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label custom-label-auth">{{ __('Mot de passe') }}</label>
+                            <input id="password" type="password" class="form-control form-control-lg custom-form-control @error('password') is-invalid @enderror" name="password" required autocomplete="new-password" placeholder="Créez un mot de passe">
+                            @error('password')
+                                <div class="invalid-feedback">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-4"> {{-- Augmentation de la marge inférieure --}}
+                            <label for="password_confirmation" class="form-label custom-label-auth">{{ __('Confirmer le mot de passe') }}</label>
+                            <input id="password_confirmation" type="password" class="form-control form-control-lg custom-form-control" name="password_confirmation" required autocomplete="new-password" placeholder="Confirmez votre mot de passe">
+                        </div>
+
+                        <div class="d-grid gap-2 mb-3">
+                            <button type="submit" class="btn custom-primary-button btn-lg">
+                                <i class="fas fa-user-plus me-2"></i> {{ __('S\'inscrire') }}
+                            </button>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <p class="mb-0 text-muted">Déjà un compte ? <a href="{{ route('login') }}" class="custom-link-auth fw-bold">Connectez-vous ici</a></p>
+                        </div>
+                    </form>
+                </div>
             </div>
-        @endif
-
-        <form action="{{ route('register.post') }}" method="POST">
-            @csrf
-
-            <div class="form-group">
-                <label for="name">Nom :</label>
-                <input type="text" id="name" name="name" value="{{ old('name') }}" required autofocus>
-            </div>
-
-            <div class="form-group">
-                <label for="email">Adresse Email :</label>
-                <input type="email" id="email" name="email" value="{{ old('email') }}" required>
-            </div>
-
-            <div class="form-group">
-                <label for="password">Mot de passe :</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-
-            <div class="form-group">
-                <label for="password_confirmation">Confirmer le mot de passe :</label>
-                <input type="password" id="password_confirmation" name="password_confirmation" required>
-            </div>
-
-            <button type="submit" class="btn-register">S'inscrire</button>
-        </form>
-
-        <div class="text-center">
-            Déjà un compte ? <a href="{{ route('login') }}">Connectez-vous ici</a>
         </div>
     </div>
-</body>
-</html>
+</div>
+@endsection

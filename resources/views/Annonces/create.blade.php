@@ -1,4 +1,4 @@
-@extends('layouts.app') {{-- Assurez-vous d'avoir un layout appelé 'app' --}}
+@extends('layouts.app')
 
 @section('title', 'Créer une Annonce - AnnoncesGG')
 
@@ -6,9 +6,11 @@
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Créer une nouvelle Annonce</h3>
+            <div class="card shadow-sm border-0"> {{-- Ajout d'une ombre et bordure retirée pour un look plus moderne --}}
+                {{-- Application de la classe custom-gradient-header --}}
+                <div class="card-header custom-gradient-header">
+                    <i class="fas fa-bullhorn fa-lg me-3"></i> {{-- Icône pour symboliser la création d'annonce --}}
+                    <h3 class="mb-0 text-white">Créer une nouvelle Annonce</h3> {{-- Le texte est déjà blanc grâce à custom-gradient-header --}}
                 </div>
                 <div class="card-body">
                     {{-- Le formulaire doit pointer vers la route 'annonces.store' --}}
@@ -22,7 +24,7 @@
                                    class="form-control @error('Titre') is-invalid @enderror"
                                    id="Titre"
                                    name="Titre"
-                                   value="{{ old('Titre') }}" {{-- old() pour conserver la valeur en cas d'erreur de validation --}}
+                                   value="{{ old('Titre') }}"
                                    placeholder="Ex: Vélo de montagne à vendre"
                                    required
                                    maxlength="255">
@@ -66,13 +68,13 @@
                         {{-- Champ: Prix --}}
                         <div class="mb-3">
                             <label for="Prix" class="form-label">Prix ($)</label>
-                            <input type="text" {{-- Changez 'number' en 'text' si vous voulez le pattern HTML5 pour les décimales --}}
+                            <input type="text"
                                    class="form-control @error('Prix') is-invalid @enderror"
                                    id="Prix"
                                    name="Prix"
                                    value="{{ old('Prix') }}"
                                    placeholder="Ex: 124.59 (Laissez vide si gratuit)"
-                                   pattern="^\d+(\.\d{1,2})?$" {{-- Ajouté pour un format de prix avec ou sans décimales --}}
+                                   pattern="^\d+(\.\d{1,2})?$"
                                    title="Veuillez entrer un nombre avec ou sans deux décimales (ex: 124 ou 124.59)">
                             @error('Prix')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -89,9 +91,7 @@
                                    name="DateFin"
                                    value="{{ old('DateFin') }}">
                             @error('DateFin')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
-                                </div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                             <small class="form-text text-muted">La date après laquelle l'annonce ne sera plus visible. Laissez vide pour aucune date d'expiration.</small>
                         </div>
@@ -101,7 +101,6 @@
                             <label for="Categorie" class="form-label">Catégorie <span class="text-danger">*</span></label>
                             <select class="form-control @error('Categorie') is-invalid @enderror" id="Categorie" name="Categorie" required>
                                 <option value="">-- Sélectionnez une catégorie --</option>
-                                {{-- La variable $categories doit être passée depuis le contrôleur AnnonceController@create --}}
                                 @forelse($categories as $categorie)
                                     <option value="{{ $categorie->NoCategorie }}" {{ old('Categorie') == $categorie->NoCategorie ? 'selected' : '' }}>
                                         {{ $categorie->Description }}
@@ -131,8 +130,14 @@
                         </div>
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                            <button type="submit" class="btn btn-success me-md-2"><i class="fas fa-plus-circle"></i> Créer l'annonce</button>
-                            <a href="{{ route('annonces.index') }}" class="btn btn-secondary"><i class="fas fa-times-circle"></i> Annuler</a>
+                            {{-- Utilisation de la classe custom-primary-button --}}
+                            <button type="submit" class="btn custom-primary-button me-md-2">
+                                <i class="fas fa-plus-circle me-2"></i> Créer l'annonce
+                            </button>
+                            {{-- Bouton d'annulation avec icône --}}
+                            <a href="{{ route('annonces.index') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times-circle me-2"></i> Annuler
+                            </a>
                         </div>
                     </form>
                 </div>
