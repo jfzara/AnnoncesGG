@@ -5,33 +5,36 @@
 @section('content')
 <div class="container mt-4 mb-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3">Discussion avec <span class="text-primary">{{ $otherUser->name ?? 'quelqu\'un' }}</span></h1>
+        <h1 class="h3">DISCUSSION AVEC <span class="accent-text">{{ $otherUser->name ?? 'QUELQU\'UN' }}</span></h1>
         <a href="{{ route('messages.index') }}" class="btn btn-outline-secondary d-flex align-items-center" aria-label="Retour aux messages">
-            <i class="fas fa-arrow-left me-2"></i> Messages
+            <i class="fas fa-arrow-left me-2"></i> MESSAGES
         </a>
     </div>
 
     {{-- Informations sur l'annonce --}}
-    <div class="card mb-4 shadow-sm border-0">
+    <div class="card mb-4 border-0">
         <div class="card-header custom-gradient-header text-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><a href="{{ route('annonces.show', $annonce->NoAnnonce) }}" class="announcement-title-yellow text-decoration-none fw-bold">{{ $annonce->Titre }}</a></h5>
+            <h5 class="mb-0">
+                <a href="{{ route('annonces.show', $annonce->NoAnnonce) }}" class="text-on-dark text-decoration-none fw-bold" style="color: var(--text-on-dark);">{{ $annonce->Titre }}</a>
+            </h5>
         </div>
         <div class="card-body">
             <p class="card-text text-muted">{{ Str::limit($annonce->DescriptionAbregee, 150) }}</p>
-            <p class="card-text mb-0"><small class="text-success fw-bold">Prix : {{ $annonce->Prix ? number_format($annonce->Prix, 2, ',', ' ') . ' $' : 'Gratuit / Offre' }}</small></p>
+            <p class="card-text mb-0"><small class="accent-text fw-bold">PRIX : {{ $annonce->Prix ? number_format($annonce->Prix, 2, ',', ' ') . ' $' : 'GRATUIT / OFFRE' }}</small></p>
         </div>
     </div>
 
     {{-- Messages de la conversation --}}
-    <div id="message-area" class="message-area-container border rounded-3 p-3 mb-4 bg-white shadow-sm">
+    <div id="message-area" class="message-area-container mb-4">
         @if ($messages->isEmpty())
             <div class="alert alert-info text-center">
-                Pas encore de messages. Lancez la conversation !
+                PAS ENCORE DE MESSAGES. LANCEZ LA CONVERSATION !
             </div>
         @else
             <div class="chat-messages-display">
                 @foreach ($messages as $message)
                     @if ($message->sender_id === Auth::id())
+                        {{-- Message ENVOYÉ (par l'utilisateur actuel) --}}
                         <div class="message-row my-message-row">
                             <div class="message-bubble message-sent @if($message->read_at_receiver) message-read @else message-unread @endif">
                                 <p class="mb-0 message-content-text">{{ $message->content }}</p>
@@ -42,6 +45,7 @@
                             </div>
                         </div>
                     @else
+                        {{-- Message REÇU (par l'autre utilisateur) --}}
                         <div class="message-row other-message-row">
                             <div class="message-bubble message-received @if($message->read_at_receiver) message-read @else message-unread @endif">
                                 <p class="mb-0 message-content-text">{{ $message->content }}</p>
@@ -57,18 +61,18 @@
     </div>
 
     {{-- Formulaire de réponse --}}
-    <div class="card p-3 shadow-lg border-0">
-        <h5 class="mb-3 text-primary">Votre message</h5>
+    <div class="card p-4 border-0">
+        <h5 class="mb-3 accent-text">VOTRE MESSAGE</h5>
         <form action="{{ route('messages.store', ['annonce' => $annonce->NoAnnonce, 'otherUser' => $otherUser->id]) }}" method="POST">
             @csrf
             <div class="d-flex align-items-end mb-3">
-                <textarea name="content" id="content" class="form-control me-2" rows="2" placeholder="Écrire un message..." required></textarea>
+                <textarea name="content" id="content" class="form-control me-2" rows="3" placeholder="Écrire un message..." required></textarea>
                 <button type="submit" class="btn custom-send-button flex-shrink-0" aria-label="Envoyer">
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
             @error('content')
-                <div class="text-danger small mt-1">Ce champ est requis.</div>
+                <div class="text-danger small mt-1">CE CHAMP EST REQUIS.</div>
             @enderror
         </form>
     </div>
@@ -80,7 +84,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         var messageArea = document.getElementById('message-area');
         if (messageArea) {
-            if (messageArea.scrollHeight > messageArea.clientHeight) {
+            if (messageArea.children[0] && messageArea.children[0].classList.contains('chat-messages-display')) {
                 messageArea.scrollTop = messageArea.scrollHeight;
             }
         }
@@ -90,159 +94,124 @@
 
 @section('styles')
 <style>
-    :root {
-        --chat-bg-my-message: #DCF8C6;
-        --chat-bg-other-message: #E5E5EA;
-        --chat-text-color: #212529;
-        --chat-timestamp-color: #888;
-        --chat-read-icon-color: #4CAF50;
-        --chat-unread-icon-color: #AAA;
-        --chat-border-color: #dee2e6;
-        --chat-background: #f8f9fa;
-        --yellow-accent-color: #FFDA2F;
-        --send-button-gradient: linear-gradient(to right, #0081b1 0%, #0419693d 100%);
-        --placeholder-color: #AAAAAA;
+    .card {
+        border: 2px solid var(--border-subtle) !important;
+        border-radius: 0 !important;
+        box-shadow: var(--shadow-none) !important;
     }
 
-    .form-control::placeholder {
-        color: var(--placeholder-color);
-        opacity: 1;
-    }
-    .form-control::-webkit-input-placeholder {
-        color: var(--placeholder-color);
-    }
-    .form-control:-ms-input-placeholder {
-        color: var(--placeholder-color);
-    }
-    .form-control::-ms-input-placeholder {
-        color: var(--placeholder-color);
-    }
-
-    .announcement-title-yellow {
-        color: var(--yellow-accent-color) !important;
-    }
-
-    .custom-gradient-header {
-        background: var(--send-button-gradient);
-        border-top-left-radius: calc(0.375rem - 1px);
-        border-top-right-radius: calc(0.375rem - 1px);
-        padding: 1rem 1.25rem;
+    .card-header.custom-gradient-header {
+        background: var(--primary-dark) !important;
+        border-radius: 0 !important;
+        border-bottom: 2px solid var(--accent-red-orange) !important;
     }
 
     .custom-send-button {
-        background: var(--send-button-gradient);
-        border: none;
-        color: white;
-        width: 70px;
-        height: 70px;
-        border-radius: 50%;
-        font-size: 2.2rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out;
+        background-color: var(--button-background) !important;
+        border-radius: 0 !important;
+        width: 65px !important;
+        height: 65px !important;
+        box-shadow: var(--shadow-none) !important;
     }
-
-    .custom-send-button i {
-        color: white; /* Couleur initiale de l'icône */
-        transition: color 0.2s ease-in-out; /* Transition pour la couleur de l'icône */
-    }
-
     .custom-send-button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 7px 14px rgba(0, 0, 0, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
-        background-position: right center;
+        background-color: var(--button-hover-background) !important;
+        transform: none !important;
+        box-shadow: var(--shadow-none) !important;
     }
-
     .custom-send-button:hover i {
-        color: var(--yellow-accent-color) !important; /* Icône jaune au survol */
+        color: var(--text-on-dark) !important;
     }
-
-    .custom-send-button:active {
-        transform: translateY(0) scale(0.95);
-        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+    .custom-send-button i {
+        color: var(--text-on-dark) !important;
     }
 
     .message-area-container {
-        background-color: var(--chat-background);
-        border: 1px solid var(--chat-border-color);
-        border-radius: 0.375rem;
-        padding: 15px;
-        display: flex;
-        flex-direction: column;
-        height: 550px;
-        overflow-y: auto;
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: 2px solid var(--border-subtle) !important;
+        background-color: var(--chat-background) !important;
+        border-radius: 0 !important;
+        padding: 25px !important;
+        box-shadow: var(--shadow-none) !important;
+        display: flex; /* Rend le conteneur flex pour que chat-messages-display prenne l'espace */
+        flex-direction: column; /* Organise le contenu en colonne */
     }
 
+    /* ************************************************************ */
+    /* NOUVEAU : Correction de l'alignement des messages */
+    /* ************************************************************ */
+
     .chat-messages-display {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        flex-grow: 1;
+        /* Plus besoin de flex-direction: column ici si chaque row est un flex */
+        /* Pour un vrai zigzag, le parent doit juste contenir les lignes, et chaque ligne gère son alignement */
+        /* Nous allons nous assurer que les message-row sont bien des display flex */
+        flex-grow: 1; /* Permet à la zone de messages de prendre l'espace disponible */
+        display: block; /* Ou un autre display si nécessaire, mais bloquant est simple */
+        overflow-y: auto; /* Garde le défilement si le contenu dépasse */
     }
 
     .message-row {
-        display: flex;
-        width: 100%;
-        margin-bottom: 8px;
+        display: flex !important; /* Rendre chaque ligne de message un conteneur flex */
+        width: 100% !important; /* Chaque ligne occupe toute la largeur */
+        margin-bottom: 12px !important; /* Plus d'espace entre les messages */
     }
 
     .my-message-row {
-        justify-content: flex-start;
+        justify-content: flex-end !important; /* Mes messages (envoyés) sont à DROITE */
     }
 
     .other-message-row {
-        justify-content: flex-end;
+        justify-content: flex-start !important; /* Messages des autres (reçus) sont à GAUCHE */
     }
 
     .message-bubble {
-        padding: 8px 12px;
-        border-radius: 18px;
-        font-size: 0.9rem;
-        line-height: 1.4;
-        word-wrap: break-word;
-        white-space: pre-wrap;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        max-width: 75%;
-        box-sizing: border-box;
+        border-radius: 0 !important;
+        padding: 14px 20px !important;
+        line-height: 1.6 !important;
+        max-width: 60% !important;
+        border: 1px solid var(--border-subtle) !important;
+        box-shadow: var(--shadow-none) !important;
     }
 
     .message-sent {
-        background-color: var(--chat-bg-my-message);
-        color: var(--chat-text-color);
-        border-bottom-left-radius: 4px;
+        background-color: var(--chat-bg-my-message) !important;
+        color: var(--chat-text-color) !important;
+        border-left: none !important;
+        border-right: 4px solid var(--accent-red-orange) !important; /* Bordure accentuée à droite */
     }
 
     .message-received {
-        background-color: var(--chat-bg-other-message);
-        color: var(--chat-text-color);
-        border-bottom-right-radius: 4px;
+        background-color: var(--chat-bg-other-message) !important;
+        color: var(--chat-text-color) !important;
+        border-right: none !important;
+        border-left: 4px solid var(--secondary-dark) !important; /* Bordure plus sobre à gauche */
     }
+    /* ************************************************************ */
 
-    .message-content-text {
-        margin-bottom: 0;
-    }
 
     .message-timestamp {
-        font-size: 0.65rem;
-        color: var(--chat-timestamp-color);
-        opacity: 0.9;
-        margin-top: 4px;
-    }
-
-    .message-bubble .fas {
-        font-size: 0.6rem;
-        margin-left: 5px;
+        font-size: 0.75rem !important;
+        color: var(--chat-timestamp-color) !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.02em !important;
     }
 
     .text-read-icon {
-        color: var(--chat-read-icon-color);
+        color: var(--success-color) !important;
     }
 
     .text-unread-icon {
-        color: var(--chat-unread-icon-color);
+        color: var(--chat-unread-icon-color) !important;
+    }
+
+    .announcement-title-link {
+        color: var(--text-on-dark) !important;
+    }
+    .announcement-title-link:hover {
+        color: var(--accent-red-orange) !important;
+        text-decoration: underline !important;
+    }
+
+    textarea.form-control::placeholder {
+        color: var(--placeholder-color) !important;
     }
 </style>
 @endsection

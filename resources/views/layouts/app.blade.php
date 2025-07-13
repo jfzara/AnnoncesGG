@@ -19,9 +19,9 @@
     <style>
         :root {
             /* Palette de couleurs Brutaliste & Fonctionnelle */
-            --primary-dark: #1A1A1A; /* Noir très profond pour les fonds principaux et textes clés */
+            --primary-dark: #1a1a1aff; /* Noir très profond pour les fonds principaux et textes clés */
             --secondary-dark: #333333; /* Gris foncé pour les éléments secondaires */
-            --accent-red-orange: #FF4500; /* Rouge-orange vif et unique pour l'accentuation cruciale */
+            --accent-red-orange: #f84200ff; /* Rouge-orange vif et unique pour l'accentuation cruciale */
             --light-pure-white: #FFFFFF; /* Blanc pur pour les fonds et textes sur sombre */
             --text-on-light: #1A1A1A; /* Texte noir sur fonds clairs */
             --text-on-dark: #FFFFFF; /* Texte blanc sur fonds sombres */
