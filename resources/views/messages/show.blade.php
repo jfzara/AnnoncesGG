@@ -29,25 +29,12 @@
                 Aucun message dans cette conversation. Commencez la discussion !
             </div>
         @else
-            <div class="chat-columns-wrapper d-flex flex-grow-1">
-                {{-- Colonne des messages reçus (à gauche) --}}
-                <div class="messages-received-column me-2">
-                    @foreach ($messages as $message)
-                        @if ($message->sender_id !== Auth::id())
-                            <div class="message-bubble message-received @if($message->read_at_receiver) message-read @else message-unread @endif">
-                                <p class="mb-0 message-content-text">{{ $message->content }}</p>
-                                <small class="message-timestamp d-block text-end mt-1">
-                                    {{ $message->created_at->format('d/m/Y H:i') }}
-                                </small>
-                            </div>
-                        @endif
-                    @endforeach
-                </div>
-
-                {{-- Colonne des messages envoyés (à droite) --}}
-                <div class="messages-sent-column ms-2">
-                    @foreach ($messages as $message)
-                        @if ($message->sender_id === Auth::id())
+            {{-- Le wrapper Flexbox pour tous les messages --}}
+            <div class="chat-messages-display">
+                @foreach ($messages as $message)
+                    @if ($message->sender_id === Auth::id())
+                        {{-- Mes messages (envoyés) - alignés à gauche --}}
+                        <div class="message-row my-message-row">
                             <div class="message-bubble message-sent @if($message->read_at_receiver) message-read @else message-unread @endif">
                                 <p class="mb-0 message-content-text">{{ $message->content }}</p>
                                 <small class="message-timestamp d-block text-end mt-1">
@@ -55,9 +42,19 @@
                                     <i class="fas fa-check-double ms-1 @if($message->read_at_receiver) text-read-icon @else text-unread-icon @endif" title="{{ $message->read_at_receiver ? 'Lu par ' . ($otherUser->name ?? 'l\'utilisateur') : 'Envoyé' }}"></i>
                                 </small>
                             </div>
-                        @endif
-                    @endforeach
-                </div>
+                        </div>
+                    @else
+                        {{-- Messages de l'autre utilisateur (reçus) - alignés à droite --}}
+                        <div class="message-row other-message-row">
+                            <div class="message-bubble message-received @if($message->read_at_receiver) message-read @else message-unread @endif">
+                                <p class="mb-0 message-content-text">{{ $message->content }}</p>
+                                <small class="message-timestamp d-block text-end mt-1">
+                                    {{ $message->created_at->format('d/m/Y H:i') }}
+                                </small>
+                            </div>
+                        </div>
+                    @endif
+                @endforeach
             </div>
         @endif
     </div>
@@ -84,38 +81,6 @@
 @section('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        console.log("--- Débogage de la Vue des Messages ---");
-
-        // 1. Log de l'ID de l'utilisateur connecté
-        const authUserId = {{ Auth::id() }};
-        console.log('ID de l\'utilisateur connecté (Auth::id()):', authUserId);
-
-        // 2. Log des IDs des messages dans la collection
-        const messages = @json($messages); // Convertit la collection Laravel en tableau JS
-        console.log('Collection des messages passée à la vue:', messages);
-
-        let receivedMessagesCount = 0;
-        let sentMessagesCount = 0;
-
-        messages.forEach(message => {
-            console.log(`Message ID: ${message.id}, Sender ID: ${message.sender_id}, Receiver ID: ${message.receiver_id}, Content (début): ${message.content.substring(0, 30)}...`);
-
-            if (message.sender_id !== authUserId) {
-                receivedMessagesCount++;
-                console.log(`  -> Ceci est un message REÇU (sender_id: ${message.sender_id} != Auth::id(): ${authUserId})`);
-            } else {
-                sentMessagesCount++;
-                console.log(`  -> Ceci est un message ENVOYÉ (sender_id: ${message.sender_id} == Auth::id(): ${authUserId})`);
-            }
-        });
-
-        console.log(`Nombre total de messages dans la collection: ${messages.length}`);
-        console.log(`Messages comptés comme REÇUS: ${receivedMessagesCount}`);
-        console.log(`Messages comptés comme ENVOYÉS: ${sentMessagesCount}`);
-
-        console.log("--- Fin du Débogage de la Vue des Messages ---");
-
-        // Script de défilement existant
         var messageArea = document.getElementById('message-area');
         if (messageArea) {
             // Défiler vers le bas seulement s'il y a du contenu réel
@@ -130,9 +95,9 @@
 @section('styles')
 <style>
     :root {
-        --chat-bg-sent: #E0FFD0;
+        --chat-bg-my-message: #DCF8C6; /* Vert très clair, comme WhatsApp */
+        --chat-bg-other-message: #E5E5EA; /* Gris clair, comme iMessage */
         --chat-text-color: #212529;
-        --chat-bg-received: #FFFFFF;
         --chat-timestamp-color: #888;
         --chat-read-icon-color: #4CAF50;
         --chat-unread-icon-color: #AAA;
@@ -145,44 +110,34 @@
         border: 1px solid var(--chat-border-color);
         border-radius: 0.375rem;
         padding: 15px;
-        display: flex;
+        display: flex; /* Ceci reste flex pour contenir le chat-messages-display */
         flex-direction: column;
         height: 550px;
         overflow-y: auto;
         box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     }
 
-    .chat-columns-wrapper {
+    /* Nouveau wrapper pour tous les messages */
+    .chat-messages-display {
         display: flex;
-        flex-direction: row;
+        flex-direction: column; /* Les messages s'empilent verticalement */
         width: 100%;
         flex-grow: 1;
-        align-items: flex-start;
-        gap: 15px;
     }
 
-    .messages-received-column,
-    .messages-sent-column {
+    .message-row {
         display: flex;
-        flex-direction: column;
-        flex-basis: 50%;
-        max-width: 50%;
-        padding-right: 5px;
-        padding-left: 5px;
-        height: auto;
-        box-sizing: border-box;
+        width: 100%; /* Chaque ligne prend toute la largeur */
+        margin-bottom: 8px; /* Espacement entre les messages */
     }
 
-    /* Bordures de débogage */
-    .messages-received-column {
-        border: 3px solid #ff0000; /* Rouge vif pour la colonne des messages reçus */
+    .my-message-row {
+        justify-content: flex-start; /* Mes messages à gauche */
     }
 
-    .messages-sent-column {
-        align-items: flex-end;
-        border: 3px solid #0000ff; /* Bleu vif pour la colonne des messages envoyés */
+    .other-message-row {
+        justify-content: flex-end; /* Messages de l'autre à droite */
     }
-    /* Fin des bordures de débogage */
 
     .message-bubble {
         padding: 8px 12px;
@@ -190,22 +145,22 @@
         font-size: 0.9rem;
         line-height: 1.4;
         word-wrap: break-word;
-        white-space: pre-wrap;
+        white-space: pre-wrap; /* Maintient les sauts de ligne */
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        margin-bottom: 8px;
-        max-width: 95%;
+        max-width: 75%; /* La bulle ne prendra pas toute la largeur */
+        box-sizing: border-box; /* Pour inclure le padding dans la max-width */
     }
 
     .message-sent {
-        background-color: var(--chat-bg-sent);
+        background-color: var(--chat-bg-my-message);
         color: var(--chat-text-color);
-        border-bottom-right-radius: 4px;
+        border-bottom-left-radius: 4px; /* Coin bas-gauche droit pour mes messages */
     }
 
     .message-received {
-        background-color: var(--chat-bg-received);
+        background-color: var(--chat-bg-other-message);
         color: var(--chat-text-color);
-        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px; /* Coin bas-droit droit pour les messages reçus */
     }
 
     .message-content-text {
