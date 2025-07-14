@@ -6,9 +6,9 @@
 <div class="container mt-4 mb-5"> {{-- Ajout de mb-5 pour un espace généreux en bas --}}
     <div class="row justify-content-center">
         <div class="col-md-10">
-            <div class="card border-0"> {{-- Suppression de shadow-sm et border-0 pour utiliser nos styles --}}
+            <div class="card"> {{-- Suppression de shadow-sm et border-0 pour utiliser nos styles --}}
                 <div class="card-header custom-gradient-header d-flex align-items-center"> {{-- Assure l'alignement de l'icône et du texte --}}
-                    <i class="fas fa-list-alt fa-lg me-3"></i> {{-- Icône pour la gestion des annonces --}}
+                    <i class="fas fa-list-alt fa-lg me-3 text-white"></i> {{-- Icône pour la gestion des annonces --}}
                     <h3 class="mb-0 text-white">MES ANNONCES</h3> {{-- Titre en capitales, couleur définie par custom-gradient-header --}}
                 </div>
                 <div class="card-body p-4"> {{-- Augmentation du padding interne pour plus d'aération --}}
@@ -33,14 +33,14 @@
                     </div>
 
                     @forelse ($annonces as $annonce)
-                        <div class="card mb-4 border-0"> {{-- Chaque annonce est une carte. Augmentation de mb, suppression de shadow-sm et border-0 --}}
+                        <div class="card mb-4"> {{-- Chaque annonce est une carte. Augmentation de mb, suppression de shadow-sm et border-0 --}}
                             <div class="card-body p-4"> {{-- Augmentation du padding --}}
-                                <div class="d-flex align-items-center mb-4"> {{-- Espacement pour le bloc image/texte --}}
+                                <div class="d-flex align-items-start mb-4"> {{-- Changé à align-items-start pour les blocs longs --}}
                                     {{-- Image de l'annonce (si présente) --}}
                                     @if($annonce->Photo)
-                                        <img src="{{ asset('storage/' . $annonce->Photo) }}" alt="{{ $annonce->Titre }}" class="img-thumbnail me-4" style="width: 120px; height: 120px; object-fit: cover; border-radius: 0; border: 2px solid var(--border-subtle);"> {{-- Image plus grande, sans arrondi, avec bordure subtile --}}
+                                        <img src="{{ asset('storage/' . $annonce->Photo) }}" alt="{{ $annonce->Titre }}" class="img-thumbnail me-4" style="width: 120px; height: 120px; object-fit: cover;"> {{-- Image plus grande, sans arrondi, avec bordure subtile --}}
                                     @else
-                                        <img src="{{ asset('images/placeholder.webp') }}" alt="Pas de photo" class="img-thumbnail me-4" style="width: 120px; height: 120px; object-fit: cover; border-radius: 0; border: 2px solid var(--border-subtle);"> {{-- Image plus grande, sans arrondi, avec bordure subtile --}}
+                                        <img src="{{ asset('images/placeholder.webp') }}" alt="Pas de photo" class="img-thumbnail me-4" style="width: 120px; height: 120px; object-fit: cover;"> {{-- Image plus grande, sans arrondi, avec bordure subtile --}}
                                     @endif
                                     <div class="flex-grow-1"> {{-- Permet au texte de prendre l'espace restant --}}
                                         <h5 class="card-title mb-2"> {{-- Plus d'espace sous le titre --}}
@@ -50,8 +50,8 @@
                                         </h5>
                                         <p class="card-text text-muted mb-2">{{ Str::limit($annonce->DescriptionAbregee, 100) }}</p> {{-- Réduction de la description pour l'aération --}}
                                         <p class="card-text mb-1">
-                                            <span class="badge bg-secondary me-2 p-2" style="border-radius: 0; font-size: 0.9em; text-transform: uppercase;"><i class="fas fa-tag me-1"></i>{{ Str::upper($annonce->categorie->Description) }}</span> {{-- Badges plus grands, sans arrondi, texte en capitales --}}
-                                            <span class="badge bg-info text-dark p-2" style="border-radius: 0; font-size: 0.9em; text-transform: uppercase;"><i class="fas fa-money-bill-wave me-1"></i>{{ $annonce->Prix ? number_format($annonce->Prix, 2, ',', ' ') . ' $' : 'GRATUIT' }}</span> {{-- Texte en capitales --}}
+                                            <span class="badge bg-secondary me-2 p-2"><i class="fas fa-tag me-1"></i>{{ Str::upper($annonce->categorie->Description) }}</span> {{-- Badges plus grands, sans arrondi, texte en capitales --}}
+                                            <span class="badge bg-info text-dark p-2"><i class="fas fa-money-bill-wave me-1"></i>{{ $annonce->Prix ? number_format($annonce->Prix, 2, ',', ' ') . ' $' : 'GRATUIT' }}</span> {{-- Texte en capitales --}}
                                         </p>
                                         <p class="card-text mb-0">
                                             <small class="text-muted"><i class="fas fa-calendar-alt me-1"></i>Publié le: {{ $annonce->Parution->format('d/m/Y') }}</small>
@@ -62,7 +62,7 @@
                                                     <i class="fas fa-hourglass-end me-1"></i>Expire le: {{ $annonce->DateFin->format('d/m/Y') }}
                                                 </small>
                                                 @if($annonce->DateFin->isPast())
-                                                    <span class="badge bg-danger ms-2 p-2" style="border-radius: 0; text-transform: uppercase;"><i class="fas fa-exclamation-circle me-1"></i>Expirée</span> {{-- Badge sans arrondi, texte en capitales --}}
+                                                    <span class="badge bg-danger ms-2 p-2"><i class="fas fa-exclamation-circle me-1"></i>EXPIRÉE</span> {{-- Badge sans arrondi, texte en capitales --}}
                                                 @endif
                                             </p>
                                         @else
@@ -72,17 +72,17 @@
                                 </div>
 
                                 <div class="mt-4 pt-4 border-top d-flex justify-content-end gap-3"> {{-- Plus d'espace au-dessus des boutons, gap augmenté --}}
-                                    <a href="{{ route('annonces.show', $annonce->NoAnnonce) }}" class="btn btn-outline-secondary btn-sm p-2" style="border-radius: 0; text-transform: uppercase; font-weight: 700;"> {{-- Boutons sans arrondi, texte en capitales --}}
+                                    <a href="{{ route('annonces.show', $annonce->NoAnnonce) }}" class="btn btn-outline-info btn-sm"> {{-- Classe btn-outline-info pour "Voir détails" --}}
                                         <i class="fas fa-eye me-1"></i> VOIR DÉTAILS
                                     </a>
-                                    <a href="{{ route('annonces.edit', $annonce->NoAnnonce) }}" class="btn btn-outline-secondary btn-sm p-2" style="border-radius: 0; text-transform: uppercase; font-weight: 700;">
+                                    <a href="{{ route('annonces.edit', $annonce->NoAnnonce) }}" class="btn btn-outline-warning btn-sm"> {{-- Classe btn-outline-warning pour "Modifier" --}}
                                         <i class="fas fa-edit me-1"></i> MODIFIER
                                     </a>
 
                                     <form action="{{ route('annonces.destroy', $annonce->NoAnnonce) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-outline-danger btn-sm p-2" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette annonce ?')" style="border-radius: 0; text-transform: uppercase; font-weight: 700;"> {{-- Bouton supprimer aussi en capitales --}}
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('ÊTES-VOUS SÛR DE VOULOIR SUPPRIMER CETTE ANNONCE ?')"> {{-- Bouton supprimer aussi en capitales --}}
                                             <i class="fas fa-trash-alt me-1"></i> SUPPRIMER
                                         </button>
                                     </form>
@@ -90,11 +90,11 @@
                             </div>
                         </div>
                     @empty
-                        <div class="alert alert-info text-center py-5" style="border-radius: 0; border: 2px solid var(--border-subtle);"> {{-- Alertes sans arrondi, plus de padding, avec bordure --}}
-                            <i class="fas fa-info-circle fa-3x mb-4 d-block" style="color: var(--info-color);"></i> {{-- Icône plus grande et couleur accentuée --}}
-                            <h4 class="alert-heading text-uppercase mb-3" style="font-family: var(--font-heading);">AUCUNE ANNONCE TROUVÉE</h4> {{-- Titre en capitales, police titre --}}
+                        <div class="alert alert-info text-center py-5"> {{-- Alertes sans arrondi, plus de padding, avec bordure --}}
+                            <i class="fas fa-info-circle fa-3x mb-4 d-block"></i> {{-- Icône plus grande et couleur accentuée --}}
+                            <h4 class="alert-heading text-uppercase mb-3">AUCUNE ANNONCE TROUVÉE</h4> {{-- Titre en capitales, police titre --}}
                             <p class="mb-4">VOUS N'AVEZ PAS ENCORE D'ANNONCES ACTIVES. CRÉEZ-EN UNE DÈS MAINTENANT !</p> {{-- Texte en capitales --}}
-                            <hr style="border-top: 1px solid var(--border-subtle);"> {{-- Ligne de séparation plus subtile --}}
+                            <hr> {{-- Ligne de séparation plus subtile --}}
                             <a href="{{ route('annonces.create') }}" class="btn custom-primary-button mt-4">
                                 <i class="fas fa-plus-circle me-2"></i> CRÉER MA PREMIÈRE ANNONCE {{-- Texte en capitales --}}
                             </a>
@@ -117,14 +117,14 @@
 
     .card {
         border: 2px solid var(--border-strong) !important; /* Bordure forte pour toutes les cartes */
-        border-radius: 0 !important; /* Pas d'arrondis */
+         /* Pas d'arrondis */
         box-shadow: var(--shadow-none) !important; /* Pas d'ombre */
         background-color: var(--light-pure-white); /* Fond blanc pur */
     }
 
     .card-header.custom-gradient-header {
         background: var(--primary-dark) !important; /* Utilise la couleur unie de notre palette */
-        border-radius: 0 !important;
+
         border-bottom: 2px solid var(--accent-red-orange) !important; /* Bordure accentuée forte */
         color: var(--text-on-dark) !important; /* Texte blanc sur fond sombre */
         padding: 1.8rem 2.2rem !important; /* Plus de padding pour l'aération */
@@ -141,20 +141,21 @@
 
     .custom-primary-button {
         /* Déjà stylisé dans app.blade.php, juste pour s'assurer des overrides si besoin */
-        border-radius: 0 !important;
+
         text-transform: uppercase !important;
         font-weight: 700 !important;
         letter-spacing: 0.05em !important;
+        padding: 0.85rem 1.8rem !important;
     }
 
     .img-thumbnail {
-        border-radius: 0 !important;
+
         border: 2px solid var(--border-subtle) !important;
-        padding: 0; /* Supprime le padding par défaut de img-thumbnail */
+        padding: 0 !important; /* Supprime le padding par défaut de img-thumbnail */
     }
 
     .badge {
-        border-radius: 0 !important; /* Tous les badges sans arrondi */
+         /* Tous les badges sans arrondi */
         font-weight: 700 !important; /* Gras pour l'impact */
         padding: 0.5em 0.8em !important; /* Plus de padding */
         text-transform: uppercase !important; /* Texte en capitales */
@@ -170,8 +171,8 @@
         border: 2px solid var(--secondary-dark) !important;
         color: var(--secondary-dark) !important;
         font-weight: 700 !important;
-        padding: 0.85rem 1.8rem !important;
-        border-radius: 0 !important;
+        padding: 0.85rem 1.8rem !important; /* Ajusté pour plus de cohérence */
+
         text-transform: uppercase !important;
         letter-spacing: 0.04em !important;
     }
@@ -183,8 +184,8 @@
         border: 2px solid var(--info-color) !important;
         color: var(--info-color) !important;
         font-weight: 700 !important;
-        padding: 0.85rem 1.8rem !important;
-        border-radius: 0 !important;
+        padding: 0.85rem 1.8rem !important; /* Ajusté */
+
         text-transform: uppercase !important;
         letter-spacing: 0.04em !important;
     }
@@ -196,8 +197,8 @@
         border: 2px solid var(--warning-color) !important;
         color: var(--warning-color) !important;
         font-weight: 700 !important;
-        padding: 0.85rem 1.8rem !important;
-        border-radius: 0 !important;
+        padding: 0.85rem 1.8rem !important; /* Ajusté */
+
         text-transform: uppercase !important;
         letter-spacing: 0.04em !important;
     }
@@ -209,8 +210,8 @@
         border: 2px solid var(--danger-color) !important;
         color: var(--danger-color) !important;
         font-weight: 700 !important;
-        padding: 0.85rem 1.8rem !important;
-        border-radius: 0 !important;
+        padding: 0.85rem 1.8rem !important; /* Ajusté */
+
         text-transform: uppercase !important;
         letter-spacing: 0.04em !important;
     }
@@ -222,7 +223,7 @@
 
     /* Alertes (messages de session) */
     .alert {
-        border-radius: 0 !important; /* Sans arrondi */
+         /* Sans arrondi */
         border: 2px solid !important; /* Bordure forte */
         font-weight: 500;
         padding: 1.5rem !important; /* Plus de padding */
@@ -267,7 +268,7 @@
         --bs-pagination-border-color: var(--border-strong);
     }
     .page-item .page-link {
-        border-radius: 0 !important;
+
         padding: 0.75rem 1.25rem !important; /* Plus de padding pour les liens de pagination */
         font-weight: 700;
         text-transform: uppercase;

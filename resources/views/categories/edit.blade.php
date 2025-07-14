@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Nouveau Message - TrouveTout')
+@section('title', 'Modifier la Catégorie - TrouveTout')
 
 @section('styles')
 <style>
@@ -8,7 +8,7 @@
     .custom-card {
         border-radius: 12px;
         overflow: hidden;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08); /* Ombre plus douce */
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08); /* Ombre plus douce que les cartes d'auth */
         background-color: var(--light-pure-white);
         border: none;
     }
@@ -17,7 +17,7 @@
         padding: 2.5rem 1.5rem;
         border-bottom: none;
         background: var(--gradient-primary); /* Utilise le dégradé primaire */
-        color: var(--text-on-dark);
+        color: var(--text-on-dark); /* Couleur du texte sur le dégradé */
     }
 
     .custom-card .card-header h3 {
@@ -40,7 +40,7 @@
         padding: 2rem 2.5rem;
     }
 
-    .custom-label {
+    .custom-label { /* Style générique pour les labels de formulaire */
         font-family: var(--font-body);
         font-weight: 600;
         color: var(--text-on-light);
@@ -53,13 +53,13 @@
         padding: 0.75rem 1.25rem;
         font-size: 1.1rem;
         border: 1px solid var(--border-subtle);
-        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.03);
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.03); /* Ombre interne plus légère */
         transition: all 0.2s ease-in-out;
     }
 
     .custom-form-control:focus {
         border-color: var(--primary-light);
-        box-shadow: 0 0 0 0.25rem rgba(var(--primary-rgb), 0.2);
+        box-shadow: 0 0 0 0.25rem rgba(var(--primary-rgb), 0.2); /* Opacité réduite pour un look plus doux */
         background-color: var(--light-pure-white);
     }
 
@@ -78,7 +78,7 @@
         margin-top: 0.5rem;
     }
 
-    .form-text {
+    .form-text { /* Pour les petits textes d'aide */
         font-size: 0.9rem;
         color: var(--text-on-light-muted);
     }
@@ -108,7 +108,7 @@
         padding-left: 1.25rem;
     }
 
-    .alert h5 {
+    .alert h5 { /* Pour le titre "Erreurs de validation" */
         font-size: 1.1rem;
         font-weight: 600;
         margin-bottom: 0.5rem;
@@ -149,7 +149,7 @@
 
     /* Boutons personnalisés */
     .custom-primary-button {
-        padding: 0.85rem 2rem;
+        padding: 0.85rem 2rem; /* Légèrement plus petit pour les formulaires internes */
         font-size: 1rem;
         font-weight: 700;
         border-radius: 8px;
@@ -203,10 +203,10 @@
 @section('content')
 <div class="container mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-8"> {{-- Largeur plus grande pour le formulaire de message --}}
+        <div class="col-md-6">
             <div class="card custom-card">
                 <div class="card-header text-center">
-                    <h3 class="mb-0"><i class="fas fa-paper-plane me-2"></i> {{ __('Envoyer un Nouveau Message') }}</h3>
+                    <h3 class="mb-0"><i class="fas fa-edit me-2"></i> {{ __('Modifier la Catégorie') }}</h3>
                 </div>
                 <div class="card-body">
                     @if ($errors->any())
@@ -234,53 +234,24 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('messages.store') }}" method="POST">
+                    <form action="{{ route('categories.update', $category->id) }}" method="POST">
                         @csrf
+                        @method('PUT') {{-- Indique que c'est une requête PUT pour la mise à jour --}}
 
-                        {{-- Champ pour le destinataire (si vous passez un user_id ou un champ de sélection) --}}
                         <div class="mb-3">
-                            <label for="receiver_id" class="form-label custom-label">{{ __('Destinataire') }} <span class="text-danger">*</span></label>
-                            {{-- Ceci est un exemple si vous voulez un champ de sélection.
-                                Si le destinataire est pré-rempli (e.g., depuis une annonce), vous pouvez utiliser un champ caché. --}}
-                            <select id="receiver_id" class="form-control custom-form-control @error('receiver_id') is-invalid @enderror" name="receiver_id" required>
-                                <option value="">{{ __('Sélectionnez un destinataire') }}</option>
-                                @foreach ($users as $user) {{-- Assurez-vous de passer $users depuis votre contrôleur --}}
-                                    <option value="{{ $user->id }}" {{ old('receiver_id') == $user->id ? 'selected' : '' }}>
-                                        {{ $user->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('receiver_id')
+                            <label for="Description" class="form-label custom-label">{{ __('Nom de la Catégorie') }} <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control custom-form-control @error('Description') is-invalid @enderror" id="Description" name="Description" value="{{ old('Description', $category->Description) }}" required maxlength="20" autofocus placeholder="Ex: Électronique, Immobilier...">
+                            @error('Description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+                            <small class="form-text mt-2">Le nom de la catégorie (max. 20 caractères).</small>
                         </div>
-
-                        {{-- Champ pour le sujet du message (optionnel, mais courant) --}}
-                        <div class="mb-3">
-                            <label for="subject" class="form-label custom-label">{{ __('Sujet du message') }}</label>
-                            <input type="text" class="form-control custom-form-control @error('subject') is-invalid @enderror" id="subject" name="subject" value="{{ old('subject') }}" placeholder="Ex: Question sur l'annonce, Salutations...">
-                            @error('subject')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <small class="form-text mt-2">Le sujet de votre message (optionnel).</small>
-                        </div>
-
-                        {{-- Champ pour le contenu du message --}}
-                        <div class="mb-4">
-                            <label for="message_content" class="form-label custom-label">{{ __('Votre Message') }} <span class="text-danger">*</span></label>
-                            <textarea class="form-control custom-form-control @error('message_content') is-invalid @enderror" id="message_content" name="message_content" rows="5" required placeholder="Écrivez votre message ici...">{{ old('message_content') }}</textarea>
-                            @error('message_content')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <small class="form-text mt-2">Votre message principal.</small>
-                        </div>
-
                         <div class="d-flex justify-content-end gap-2 mt-4">
                             <button type="submit" class="btn custom-primary-button">
-                                <i class="fas fa-paper-plane me-2"></i> {{ __('Envoyer le Message') }}
+                                <i class="fas fa-save me-2"></i> {{ __('Mettre à jour') }}
                             </button>
-                            <a href="{{ url()->previous() }}" class="btn custom-secondary-button"> {{-- Retour à la page précédente --}}
-                                <i class="fas fa-arrow-left me-2"></i> {{ __('Annuler') }}
+                            <a href="{{ route('categories.index') }}" class="btn custom-secondary-button">
+                                <i class="fas fa-arrow-left me-2"></i> {{ __('Retour aux Catégories') }}
                             </a>
                         </div>
                     </form>

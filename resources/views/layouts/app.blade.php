@@ -9,10 +9,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    {{-- Google Fonts pour des polices modernes et lisibles (Space Mono pour titres, Inter pour corps) --}}
+    {{-- Google Fonts : Inter pour le corps, Onest pour les titres (pour un style moderne) --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
 
     {{-- Styles CSS personnalisés globaux --}}
@@ -28,7 +29,7 @@
             --border-strong: rgba(0, 0, 0, 0.08); /* Bordure très subtile, presque invisible, gris très très clair */
             --border-subtle: rgba(0, 0, 0, 0.04); /* Bordure encore plus subtile ou transparente */
 
-            /* Aucun dégradé direct pour le brutaliste, mais des couleurs unies modernisées */
+            /* Couleurs unies modernisées */
             --header-background: #34495e; /* Un bleu-gris foncé pour la navbar */
             --button-background: var(--accent-red-orange);
             --button-hover-background: #e74c3c; /* Un corail légèrement plus foncé au survol */
@@ -46,11 +47,10 @@
 
             /* Ombres minimalistes ou absentes */
             --shadow-none: none;
-            /* --shadow-subtle: 0 4px 15px rgba(0, 0, 0, 0.05);  Supprimé */
 
-            /* Polices Modernisées (Inter et Space Mono restent un bon choix brutaliste/moderne) */
-            --font-heading: 'Space Mono', monospace; /* Garder pour le caractère distinctif */
-            --font-body: 'Inter', sans-serif; /* Très bonne police moderne et lisible */
+            /* Polices Modernisées : Onest pour les titres, Inter pour le corps */
+            --font-heading: 'Onest', sans-serif; /* Nouveau pour les titres */
+            --font-body: 'Inter', sans-serif;    /* Reste Inter pour le corps */
 
             /* Variables pour la discussion / chat (ajustées au nouveau thème) */
             --chat-bg-my-message: #e0f2f7; /* Bleu très clair pour les messages envoyés */
@@ -61,6 +61,19 @@
             --chat-unread-icon-color: #bdc3c7;
             --chat-border-color: rgba(0, 0, 0, 0.05); /* Bordure très légère pour le chat */
             --chat-background: var(--light-pure-white);
+
+            --primary-color: var(--primary-dark);
+
+            /* --- NOUVELLES VARIABLES AJOUTÉES POUR COHÉRENCE --- */
+            --primary-light: #e0f2f7; /* Une version plus claire du primary-dark pour certains éléments comme les bulles */
+            --background-hover: #e9ecef; /* Un gris très clair pour les fonds au survol */
+            --text-on-light-muted: #7f8c8d; /* Un gris doux pour les textes secondaires/timestamps */
+            --primary-rgb: 44, 62, 80; /* Valeurs RGB de --primary-dark (#2c3e50) pour les ombres */
+            --info-light: #d1ecf1; /* Une version claire de info-color pour les alertes info */
+            --info-dark: #0c5460; /* Une version foncée de info-color pour le texte des alertes info */
+            --info-rgb: 52, 152, 219; /* Valeurs RGB de --info-color (#3498db) pour les ombres des alertes */
+            --gradient-primary: linear-gradient(to right, var(--primary-dark), #34495e); /* Dégradé primaire si utilisé ailleurs */
+            --primary-light-border: #ccd9e0; /* Une bordure subtile pour les bulles envoyées */
         }
 
         /* --- Généralités et accessibilité --- */
@@ -92,7 +105,6 @@
                 padding-right: 6rem;
             }
         }
-        /* Les 'container-fluid' devraient continuer à occuper 100% naturellement */
 
 
         h1, h2, h3, h4, h5, h6 {
@@ -140,7 +152,7 @@
         /* --- Navbar --- */
         .navbar {
             background-color: var(--header-background);
-            box-shadow: var(--shadow-none); /* Supprimé l'ombre subtile ici */
+            box-shadow: var(--shadow-none); /* Pas d'ombre */
             padding: 1.5rem 0; /* Plus de padding pour aérer */
             border-bottom: none; /* Supprime la bordure forte du bas */
             border-radius: 0;
@@ -200,7 +212,7 @@
         .navbar-nav .nav-link.active {
             color: var(--text-on-dark) !important;
             background-color: var(--accent-red-orange);
-            box-shadow: var(--shadow-none); /* Supprimé l'ombre subtile ici */
+            box-shadow: var(--shadow-none); /* Pas d'ombre */
             font-weight: 700;
         }
 
@@ -212,7 +224,7 @@
         .dropdown-menu {
             background-color: var(--primary-dark);
             border: none; /* Supprime la bordure forte */
-            box-shadow: var(--shadow-none); /* Supprimé l'ombre subtile ici */
+            box-shadow: var(--shadow-none); /* Pas d'ombre */
             border-radius: 4px; /* Légers arrondis */
             padding: 0.5rem 0; /* Padding interne pour aérer */
         }
@@ -260,7 +272,7 @@
             display: flex;
             align-items: center;
             border-bottom: none; /* Supprime la bordure accentuée forte */
-            box-shadow: var(--shadow-none); /* Supprimé l'ombre subtile ici */
+            box-shadow: var(--shadow-none); /* Pas d'ombre */
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-bottom: 3rem; /* Double le padding entre les sections */
@@ -308,7 +320,7 @@
             font-size: 1.2rem; /* Plus grande taille */
             font-weight: 700;
             transition: all 0.2s ease-in-out;
-            box-shadow: var(--shadow-none); /* Supprimé l'ombre subtile ici */
+            box-shadow: var(--shadow-none); /* Pas d'ombre */
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -346,7 +358,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: var(--shadow-none); /* Supprimé l'ombre subtile ici */
+            box-shadow: var(--shadow-none); /* Pas d'ombre */
             transition: all 0.2s ease-in-out;
         }
 
@@ -398,7 +410,7 @@
             padding: 30px; /* Plus de padding */
             height: 550px;
             overflow-y: auto;
-            box-shadow: var(--shadow-none); /* Supprimé l'ombre subtile ici */
+            box-shadow: var(--shadow-none); /* Pas d'ombre */
         }
 
         .message-row {
@@ -464,6 +476,7 @@
                     <li class="nav-item">
                         <a class="nav-link {{ Request::routeIs('annonces.index') ? 'active' : '' }}" href="{{ route('annonces.index') }}">Annonces</a>
                     </li>
+                    {{-- Condition pour afficher le lien "Catégories" UNIQUEMENT pour les admins --}}
                     @auth
                         @if(Auth::user()->isAdmin())
                             <li class="nav-item">
@@ -478,6 +491,7 @@
 
                 <ul class="navbar-nav ms-auto">
                     @auth
+                        {{-- Lien vers les messages avec indicateur de non lus --}}
                         <li class="nav-item me-3">
                             <a class="nav-link position-relative" href="{{ route('messages.index') }}">
                                 <i class="fas fa-envelope fa-lg"></i> Messages
@@ -493,6 +507,7 @@
                             </a>
                         </li>
 
+                        {{-- Menu déroulant pour l'utilisateur connecté --}}
                         <li class="nav-item dropdown">
                             <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                 {{ Auth::user()->name }}
@@ -517,6 +532,7 @@
                             </div>
                         </li>
                     @else
+                        {{-- Liens pour les utilisateurs non connectés --}}
                         <li class="nav-item">
                             <a class="nav-link {{ Request::routeIs('login') ? 'active' : '' }}" href="{{ route('login') }}">CONNEXION</a>
                         </li>

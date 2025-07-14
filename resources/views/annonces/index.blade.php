@@ -2,13 +2,214 @@
 
 @section('title', 'Toutes les Annonces - TrouveTout') {{-- Nom de l'application plus spécifique --}}
 
+{{-- Si vous avez des styles spécifiques à cette page qui ne sont pas dans app.blade.php, mettez-les ici --}}
+@section('styles')
+<style>
+    /* Styles spécifiques pour les annonces */
+    .custom-heading {
+        color: var(--primary-dark); /* Utilise la couleur de texte des titres */
+        font-family: var(--font-heading);
+        font-weight: 700;
+        font-size: 3rem; /* Aligne avec les h2 de votre thème */
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        margin-bottom: 2.5rem; /* Espace sous le titre */
+    }
+
+    .custom-card-img {
+        height: 200px; /* Hauteur fixe pour les images de carte */
+        object-fit: cover; /* Assure que l'image couvre l'espace sans distorsion */
+        border-top-left-radius: 4px; /* Arrondi léger pour les coins supérieurs */
+        border-top-right-radius: 4px;
+    }
+
+    .custom-card-hover:hover {
+        transform: translateY(-5px); /* Léger effet de soulèvement au survol */
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Ombre plus prononcée au survol */
+    }
+
+    .custom-card-title {
+        color: var(--primary-dark);
+        font-family: var(--font-heading);
+        font-weight: 600; /* Moins gras que les h1, mais accentué */
+        font-size: 1.5rem; /* Taille adaptée aux titres de carte */
+        margin-bottom: 1rem;
+        line-height: 1.3;
+    }
+
+    .custom-price-text {
+        color: var(--accent-red-orange); /* Utilise la couleur d'accent pour le prix */
+        font-family: var(--font-heading);
+        font-size: 1.8rem;
+    }
+
+    /* Ajustement des formulaires pour les filtres */
+    .custom-form-control {
+        border-radius: 4px;
+        border: 1px solid var(--border-subtle);
+        padding: 0.85rem 1.2rem; /* Légèrement moins de padding que les inputs généraux */
+        font-size: 1rem;
+        color: var(--text-on-light);
+        background-color: var(--light-pure-white);
+    }
+    .custom-form-control::placeholder {
+        color: var(--placeholder-color);
+        opacity: 1;
+    }
+    .custom-form-control:focus {
+        border-color: var(--focus-ring-color);
+        box-shadow: 0 0 0 0.25rem var(--focus-ring-color); /* Utilise la couleur de focus ring */
+    }
+
+    /* Bouton "Voir détails" */
+    .custom-secondary-button {
+        background-color: var(--secondary-dark); /* Utilise la couleur secondaire */
+        border: none;
+        color: var(--text-on-dark);
+        padding: 0.8rem 1.5rem; /* Padding adapté aux boutons de carte */
+        border-radius: 4px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        transition: all 0.2s ease-in-out;
+        box-shadow: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+
+    .custom-secondary-button:hover {
+        background-color: #4a596b; /* Un peu plus foncé au survol */
+        transform: translateY(-1px);
+        box-shadow: none;
+        color: var(--text-on-dark);
+    }
+
+    .custom-secondary-button:active {
+        transform: translateY(0);
+        box-shadow: none;
+    }
+
+    /* Alignement des icônes dans les alertes */
+    .alert .fa-check-circle,
+    .alert .fa-exclamation-triangle,
+    .alert .fa-box-open {
+        color: inherit; /* Utilise la couleur du texte de l'alerte */
+    }
+
+    /* Styles pour le bouton "Contacter" (btn-success) */
+    .btn-success {
+        background-color: var(--success-color);
+        border-color: var(--success-color);
+        color: var(--text-on-dark);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        padding: 0.75rem 1.5rem; /* Moins de padding que le custom-primary-button */
+        border-radius: 4px;
+        transition: all 0.2s ease-in-out;
+        box-shadow: none;
+    }
+    .btn-success:hover {
+        background-color: #28a745; /* Vert légèrement plus foncé */
+        border-color: #28a745;
+        transform: translateY(-1px);
+        box-shadow: none;
+        color: var(--text-on-dark);
+    }
+    .btn-success:active {
+        transform: translateY(0);
+        box-shadow: none;
+    }
+
+    /* Styles pour le bouton "Modifier" (btn-outline-warning) */
+    .btn-outline-warning {
+        border: 1px solid var(--warning-color);
+        color: var(--warning-color);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        transition: all 0.2s ease-in-out;
+        box-shadow: none;
+    }
+    .btn-outline-warning:hover {
+        background-color: var(--warning-color);
+        color: var(--text-on-dark);
+        transform: translateY(-1px);
+        box-shadow: none;
+    }
+    .btn-outline-warning:active {
+        transform: translateY(0);
+        box-shadow: none;
+    }
+
+    /* Styles pour le bouton "Supprimer" (btn-outline-danger) */
+    .btn-outline-danger {
+        border: 1px solid var(--danger-color);
+        color: var(--danger-color);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        transition: all 0.2s ease-in-out;
+        box-shadow: none;
+    }
+    .btn-outline-danger:hover {
+        background-color: var(--danger-color);
+        color: var(--text-on-dark);
+        transform: translateY(-1px);
+        box-shadow: none;
+    }
+    .btn-outline-danger:active {
+        transform: translateY(0);
+        box-shadow: none;
+    }
+
+    /* Style pour les alertes Bootstrap */
+    .alert {
+        border-radius: 8px; /* Plus d'arrondis pour la douceur */
+        border: none; /* Supprime la bordure par défaut */
+        padding: 1.5rem 2rem; /* Plus de padding */
+    }
+
+    .alert-success {
+        background-color: var(--success-color);
+        color: var(--text-on-dark);
+    }
+    .alert-danger {
+        background-color: var(--danger-color);
+        color: var(--text-on-dark);
+    }
+    .alert-info {
+        background-color: var(--info-color);
+        color: var(--text-on-dark);
+    }
+    .alert-link {
+        color: var(--text-on-dark); /* Le texte du lien dans l'alerte aura la couleur du texte sur fond sombre */
+        text-decoration: underline;
+    }
+    .alert-link:hover {
+        color: var(--light-pure-white); /* Encore plus clair au survol */
+    }
+
+    /* Styles spécifiques pour le placeholder si aucune annonce */
+    .alert-info .fas {
+        color: rgba(255, 255, 255, 0.7); /* Icône plus claire sur fond info */
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="container mt-4">
     <div class="row">
         <div class="col-12">
             {{-- En-tête de la section des annonces --}}
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="display-5 custom-heading mb-0">
+                <h1 class="custom-heading mb-0"> {{-- Appliquer la classe custom-heading ici --}}
                     <i class="fas fa-search me-3"></i> Parcourir les Annonces
                 </h1>
                 @auth
@@ -82,7 +283,7 @@
             {{-- Affichage des annonces --}}
             @if ($annonces->isEmpty())
                 <div class="alert alert-info text-center py-5 shadow-sm rounded-3">
-                    <i class="fas fa-box-open fa-3x mb-3 text-secondary"></i>
+                    <i class="fas fa-box-open fa-3x mb-3 text-white-50"></i> {{-- Couleur de l'icône sur fond info --}}
                     <h4 class="alert-heading">Aucune annonce trouvée</h4>
                     <p class="mb-0">Désolé, aucune annonce ne correspond à vos critères de recherche.</p>
                     <p class="mb-0 mt-1">
@@ -122,7 +323,7 @@
                                             {{-- Le bloc conditionnel pour le bouton "Contacter" --}}
                                             @if ($annonce->user && Auth::id() !== $annonce->user->id)
                                                 <a href="{{ route('messages.show', ['annonce' => $annonce->NoAnnonce, 'otherUser' => $annonce->user->id]) }}"
-                                                   class="btn btn-success btn-sm" title="Contacter le vendeur">
+                                                    class="btn btn-success btn-sm" title="Contacter le vendeur">
                                                     <i class="fas fa-envelope me-1"></i> Contacter
                                                 </a>
                                             @elseif (Auth::id() === $annonce->NoUtilisateur)
