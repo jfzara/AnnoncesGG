@@ -44,9 +44,21 @@ class Annonce extends Model
         return $this->belongsTo(Categorie::class, 'Categorie', 'NoCategorie');
     }
 
-    // Ajout de la relation pour les messages liés à cette annonce
+    // Relation pour les messages liés à cette annonce
     public function messages()
     {
         return $this->hasMany(Message::class, 'annonce_id', 'NoAnnonce');
+    }
+
+    // --- NOUVELLE RELATION POUR LES FAVORIS ---
+    public function favoritedByUsers()
+    {
+        return $this->belongsToMany(User::class, 'favorites', 'annonce_id', 'user_id', 'NoAnnonce', 'id');
+    }
+
+    // --- NOUVELLE RELATION POUR LES COMMENTAIRES ---
+    public function comments()
+    {
+        return $this->hasMany(Comment::class, 'annonce_id', 'NoAnnonce');
     }
 }

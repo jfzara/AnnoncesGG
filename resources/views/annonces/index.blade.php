@@ -297,7 +297,8 @@
                         <div class="col">
                             <div class="card h-100 shadow-sm custom-card-hover border-0"> {{-- Ajout de la classe de survol --}}
                                 @if ($annonce->Photo)
-                                    <img src="{{ asset('storage/' . $annonce->Photo) }}" class="card-img-top custom-card-img" alt="{{ $annonce->Titre }}">
+                                    {{-- C'EST LA LIGNE QUI A ÉTÉ MODIFIÉE ! --}}
+                                    <img src="{{ $annonce->Photo }}" class="card-img-top custom-card-img" alt="{{ $annonce->Titre }}">
                                 @else
                                     <img src="{{ asset('images/placeholder.webp') }}" class="card-img-top custom-card-img" alt="Pas d'image"> {{-- Utilisation du placeholder générique --}}
                                 @endif

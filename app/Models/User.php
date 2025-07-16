@@ -16,7 +16,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role', // <<< AJOUTEZ CETTE LIGNE
+        'role',
     ];
 
     protected $hidden = [
@@ -55,6 +55,23 @@ class User extends Authenticatable
     public function receivedMessages()
     {
         return $this->hasMany(Message::class, 'receiver_id');
+    }
+
+    // --- NOUVELLES RELATIONS POUR LES FAVORIS ---
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    public function favoritedAnnonces()
+    {
+        return $this->belongsToMany(Annonce::class, 'favorites', 'user_id', 'annonce_id', 'id', 'NoAnnonce');
+    }
+
+    // --- NOUVELLE RELATION POUR LES COMMENTAIRES ---
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
     }
 
     // Méthode d'aide pour vérifier le rôle
