@@ -15,7 +15,8 @@
                     {{-- Section photo --}}
                     @if($annonce->Photo)
                         <div class="mb-4 text-center">
-                            <img src="{{ asset('storage/' . $annonce->Photo) }}" class="img-fluid rounded shadow-sm custom-detail-img" alt="Photo de l'annonce">
+                            {{-- MODIFICATION ICI : Utilisation directe de l'URL Cloudinary --}}
+                            <img src="{{ $annonce->Photo }}" class="img-fluid rounded shadow-sm custom-detail-img" alt="Photo de l'annonce">
                         </div>
                     @else
                         <div class="mb-4 text-center text-muted border p-4 rounded bg-light">

@@ -96,9 +96,11 @@
                         <div class="col">
                             <div class="card h-100 shadow-sm custom-card-hover border-0"> {{-- Ajout de la classe de survol --}}
                                 @if ($annonce->Photo)
-                                    <img src="{{ asset('storage/' . $annonce->Photo) }}" class="card-img-top custom-card-img" alt="{{ $annonce->Titre }}">
+                                    {{-- MODIFICATION MAJEURE ICI : Utilisation directe de l'URL Cloudinary --}}
+                                    <img src="{{ $annonce->Photo }}" class="card-img-top custom-card-img" alt="{{ $annonce->Titre }}">
                                 @else
-                                    <img src="{{ asset('images/placeholder.webp') }}" class="card-img-top custom-card-img" alt="Pas d'image"> {{-- Utilisation du placeholder générique --}}
+                                    {{-- Le placeholder reste avec asset() car c'est une image locale --}}
+                                    <img src="{{ asset('images/placeholder.webp') }}" class="card-img-top custom-card-img" alt="Pas d'image">
                                 @endif
                                 <div class="card-body d-flex flex-column">
                                     <h5 class="card-title custom-card-title mb-2">{{ $annonce->Titre }}</h5> {{-- Titre personnalisé --}}
@@ -123,7 +125,7 @@
                                             @if ($annonce->user && Auth::id() !== $annonce->user->id)
                                                 <a href="{{ route('messages.show', ['annonce' => $annonce->NoAnnonce, 'otherUser' => $annonce->user->id]) }}"
                                                    class="btn btn-success btn-sm" title="Contacter le vendeur">
-                                                    <i class="fas fa-envelope me-1"></i> Contacter
+                                                     <i class="fas fa-envelope me-1"></i> Contacter
                                                 </a>
                                             @elseif (Auth::id() === $annonce->NoUtilisateur)
                                                 {{-- Liens pour l'auteur de l'annonce --}}

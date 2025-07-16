@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Modifier l\'Annonce - ' . $annonce->Titre) {{-- Ajout du titre de l'annonce pour une meilleure clarté --}}
+@section('title', 'Modifier l\'Annonce - ' . ($annonce->Titre ?? '')) {{-- Ajout du titre de l'annonce pour une meilleure clarté --}}
 
 @section('content')
 <div class="container mt-4">
@@ -102,7 +102,8 @@
                             @if($annonce->Photo)
                                 <div class="mt-3">
                                     <p class="fw-bold mb-2">Photo actuelle :</p>
-                                    <img src="{{ asset('storage/' . $annonce->Photo) }}" alt="Photo actuelle de l'annonce" class="img-fluid rounded shadow-sm" style="max-width: 200px; height: auto;">
+                                    {{-- MODIFICATION ICI : Utilisation directe de l'URL Cloudinary --}}
+                                    <img src="{{ $annonce->Photo }}" alt="Photo actuelle de l'annonce" class="img-fluid rounded shadow-sm" style="max-width: 200px; height: auto;">
                                     <div class="form-check mt-3">
                                         <input class="form-check-input" type="checkbox" name="delete_current_image" id="delete_current_image" value="1">
                                         <label class="form-check-label" for="delete_current_image">
